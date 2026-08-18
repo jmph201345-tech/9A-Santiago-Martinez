@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            background-color: #01162e;
+            font-family: 'Courier New', monospace;
+            color: #a8e8ff;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        #matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.35;
+        }
+
+        .titulo {
+            color: #00cfff;
+            text-shadow: 0 0 10px #00cfff, 0 0 30px #00cfff;
+            letter-spacing: 4px;
+            font-size: 48px;
+        }
+
+        .contenedor {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .conten-principal {
+            display: flex;
+            flex-wrap: wrap;
+            border: 2px solid #00cfff;
+            box-shadow: 0 0 15px rgba(0,207,255,0.55), inset 0 0 20px rgba(0,207,255,0.08);
+            background: #03203d;
+            border-radius: 12px;
+            padding: 15px;
+            width: 95%;
+            max-width: 1600px;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        .parrafo {
+            color: #b8ecff;
+            line-height: 1.8;
+            text-align: justify;
+            margin-left: 20px;
+            margin-right: 20px;
+        }
+
+        .conten-imagen,
+        .conten-parrafo {
+            flex: 1;
+            width: 50%;
+            border: 2px solid #00cfff;
+            box-shadow: 0 0 12px rgba(0,207,255,0.45), inset 0 0 20px rgba(0,207,255,0.06);
+            background: #062140;
+            border-radius: 12px;
+            margin: 10px;
+            padding: 15px;
+            min-height: 400px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .conten-imagen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .conten-imagen img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .conten-parrafo {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .p-nombre {
+            color: #00cfff;
+            font-size: 40px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(0,207,255,0.8);
+            margin: 10px;
+        }
+
+        .botones_1 {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .boton_1 {
+            display: inline-block;
+            padding: 12px 24px;
+            color: #00cfff;
+            background: #062140;
+            border: 2px solid #9fdcff;
+            border-radius: 12px;
+            text-decoration: none;
+            box-shadow: inset 0 0 0 2px #0a5e9e, 0 0 10px rgba(0,207,255,0.4);
+            margin: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            cursor: pointer;
+            text-shadow: 0 0 5px rgba(0,207,255,0.8);
+        }
+
+        .boton_1:hover {
+            background: #00cfff;
+            color: #03203d;
+            box-shadow: 0 0 20px rgba(0,207,255,0.9), inset 0 0 0 2px #0a5e9e;
+        }
+
+        .horario {
+            color: #b8ecff;
+            text-align: center;
+            border: 2px solid #00cfff;
+            box-shadow: 0 0 10px rgba(0,207,255,0.4);
+            border-radius: 10px;
+            margin: 10px;
+            padding: 10px;
+            background: #052440;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .h-titulo {
+            color: #00cfff;
+            text-shadow: 0 0 8px rgba(0,207,255,0.7);
+        }
+
+        .tabla {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .tabla th, .tabla td {
+            border: 1px solid #00cfff;
+            padding: 6px 4px;
+            text-align: center;
+            color: #c8f2ff;
+            font-size: 12px;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+
+        .tabla th {
+            background: #0a3d68;
+            color: #00cfff;
+        }
+
+        .tabla td {
+            background: #062140;
+        }
+
+        .modo-hacker th {
+            background-color: #00cfff !important;
+            color: #000 !important;
+        }
+
+        .modo-hacker td {
+            background-color: #01305a !important;
+            color: #00cfff !important;
+        }
+
+        .modo-hacker {
+            background-color: #011a33;
+            color: #00cfff;
+            border: 2px solid #00cfff;
+        }
+
+        .modo-hacker th,
+        .modo-hacker td {
+            border: 1px solid #00cfff;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<header>
+    <div class="contenedor">
+        <h1 class="titulo">SANTIAGO</h1>
+    </div>
+</header>
+
+<br>
+
+<div class="conten-principal">
+
+    <div class="conten-imagen">
+        <img src="FOTO 67.png" alt="YO">
+    </div>
+
+    <div class="conten-parrafo">
+
+        <h1 class="p-nombre">Santiago Martinez Garcia</h1>
+
+        <p class="parrafo">
+            Hola Soy Santiago, estudiante del Liceo Santa Bernardita llevo 9 años estudiando en esta institución,
+            me apasiona el deporte, me gusta andar en bici, jugar baloncesto y fútbol, mi género musical favorito es
+            el Pop, mi comida favorita es el spaguetti, mi color favorito es el azul, tengo 15 años y mi hobby es dibujar.
+        </p>
+
+        <div class="botones_1">
+            <button class="boton_1" id="btn-toggle">Boton 1</button>
+            <button class="boton_1" id="btn-color">Boton 2</button>
+            <a href="Registro.html"><button class="boton_1">Boton 3</button></a>
+        </div>
+
+    </div>
+
+    <div class="horario" id="horario">
+
+        <h1 class="h-titulo">Horario</h1>
+
+        <table class="tabla" id="tabla-clases">
+
+            <tr>
+                <th>Hora</th>
+                <th>Día 1</th>
+                <th>Día 2</th>
+                <th>Día 3</th>
+                <th>Día 4</th>
+                <th>Día 5</th>
+                <th>Día 6</th>
+                <th>Día 7</th>
+            </tr>
+
+            <tr>
+                <th>1</th>
+                <td>BIOLOGÍA</td>
+                <td>EDU.FÍSICA</td>
+                <td>ESPAÑOL</td>
+                <td>FRANCÉS</td>
+                <td>BIOLOGÍA</td>
+                <td>EDU.FÍSICA</td>
+                <td>INGLÉS</td>
+            </tr>
+
+            <tr>
+                <th>2</th>
+                <td>GEOMETRÍA</td>
+                <td>SOCIALES</td>
+                <td>SOCIALES</td>
+                <td>ESPAÑOL</td>
+                <td>MATEMÁTICAS</td>
+                <td>INGLÉS</td>
+                <td>SOCIALES</td>
+            </tr>
+
+            <tr>
+                <th>3</th>
+                <td>DESCANSO</td>
+                <td>DESCANSO</td>
+                <td>DESCANSO</td>
+                <td>DESCANSO</td>
+                <td>DESCANSO</td>
+                <td>DESCANSO</td>
+                <td>DESCANSO</td>
+            </tr>
+
+            <tr>
+                <th>4</th>
+                <td>ESPAÑOL</td>
+                <td>FILOSOFÍA</td>
+                <td>ESTADÍSTICA</td>
+                <td>INFORMÁTICA</td>
+                <td>INGLÉS</td>
+                <td>FRANCÉS</td>
+                <td>ROBÓTICA</td>
+            </tr>
+
+            <tr>
+                <th>5</th>
+                <td>SOCIALES</td>
+                <td>MATEMÁTICAS</td>
+                <td>FÍSICA</td>
+                <td>INGLÉS</td>
+                <td>SOCIALES</td>
+                <td>MATEMÁTICAS</td>
+                <td>QUÍMICA</td>
+            </tr>
+
+            <tr>
+                <th>6</th>
+                <td>FRANCÉS</td>
+                <td>SKILLS</td>
+                <td>DANZAS</td>
+                <td>ÉTICA</td>
+                <td>DIBUJO/SKILLS</td>
+                <td>SOCIALES</td>
+                <td>BIOLOGÍA</td>
+            </tr>
+
+            <tr>
+                <th>7</th>
+                <td>CÁTEDRA</td>
+                <td>ESPAÑOL</td>
+                <td>PILEO</td>
+                <td>BIOLOGÍA</td>
+                <td>DIBUJO/SKILLS</td>
+                <td>PILEO</td>
+                <td>ESPAÑOL</td>
+            </tr>
+
+            <tr>
+                <th>8</th>
+                <td>INGLÉS</td>
+                <td>INGLÉS</td>
+                <td>BIOLOGÍA</td>
+                <td>MATEMÁTICAS</td>
+                <td>DANZAS</td>
+                <td>INFORMÁTICA</td>
+                <td>MATEMÁTICAS</td>
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+    const horario = document.getElementById('horario');
+    const btn = document.getElementById('btn-toggle');
+
+    horario.style.display = 'none';
+
+    btn.addEventListener('click', () => {
+        horario.style.display = horario.style.display === 'none' ? 'block' : 'none';
+    });
+
+    const botonColor = document.getElementById("btn-color");
+    const miTabla = document.getElementById("tabla-clases");
+
+    if (botonColor && miTabla) {
+        botonColor.addEventListener("click", () => {
+            miTabla.classList.toggle("modo-hacker");
+        });
+    }
+
+    const canvas = document.getElementById('matrix');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*+=-';
+    const fuente = 16;
+    let columnas = canvas.width / fuente;
+    let gotas = Array(Math.floor(columnas)).fill(1);
+
+    function dibujarMatrix() {
+        ctx.fillStyle = 'rgba(1, 22, 46, 0.08)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#00cfff';
+        ctx.font = fuente + 'px monospace';
+        for (let i = 0; i < gotas.length; i++) {
+            const texto = letras[Math.floor(Math.random() * letras.length)];
+            ctx.fillText(texto, i * fuente, gotas[i] * fuente);
+            if (gotas[i] * fuente > canvas.height && Math.random() > 0.975) {    
+                gotas[i] = 0;
+            }
+            gotas[i]++;
+        }
+    }
+
+    setInterval(dibujarMatrix, 50);
+
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        columnas = canvas.width / fuente;
+        gotas = Array(Math.floor(columnas)).fill(1);
+    });
+</script>
+
+</body>
+</html>
+                
