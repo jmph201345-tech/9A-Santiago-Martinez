@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro</title>
+    <style>
+        body {
+            background-color: #01162e;
+            font-family: 'Courier New', monospace;
+            color: #a8e8ff;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.35;
+        }
+
+        .contenedor-registro {
+            text-align: center;
+            width: 90%;
+            max-width: 480px;
+        }
+
+        .titulo {
+            color: #00cfff;
+            text-shadow: 0 0 10px #00cfff, 0 0 30px #00cfff;
+            letter-spacing: 4px;
+            font-size: 42px;
+            margin-bottom: 25px;
+        }
+
+        .caja {
+            border: 2px solid #00cfff;
+            box-shadow: 0 0 15px rgba(0,207,255,0.55), inset 0 0 20px rgba(0,207,255,0.08);
+            background: #03203d;
+            border-radius: 12px;
+            padding: 30px;
+        }
+
+        label {
+            color: #00cfff;
+            font-size: 18px;
+            display: block;
+            margin-bottom: 8px;
+            text-shadow: 0 0 6px rgba(0,207,255,0.8);
+        }
+
+        input {
+            width: 90%;
+            padding: 12px;
+            border: 2px solid #9fdcff;
+            border-radius: 10px;
+            background: #062140;
+            color: #b8ecff;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            box-shadow: inset 0 0 0 2px #0a5e9e, inset 0 0 10px rgba(0,207,255,0.1);
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            box-shadow: 0 0 12px rgba(0,207,255,0.7), inset 0 0 0 2px #0a5e9e, inset 0 0 10px rgba(0,207,255,0.15);
+        }
+
+        .boton_1 {
+            display: inline-block;
+            padding: 12px 30px;
+            color: #00cfff;
+            background: #062140;
+            border: 2px solid #9fdcff;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: inset 0 0 0 2px #0a5e9e, 0 0 10px rgba(0,207,255,0.4);
+            text-shadow: 0 0 5px rgba(0,207,255,0.8);
+            margin-top: 10px;
+        }
+
+        .boton_1:hover {
+            background: #00cfff;
+            color: #03203d;
+            box-shadow: 0 0 20px rgba(0,207,255,0.9), inset 0 0 0 2px #0a5e9e;
+        }
+
+        .mensaje {
+            color: #00cfff;
+            font-size: 24px;
+            text-shadow: 0 0 10px #00cfff, 0 0 25px #00cfff;
+            margin-top: 20px;
+            letter-spacing: 2px;
+        }
+
+        .error {
+            color: #ff5252;
+            font-size: 16px;
+            text-shadow: 0 0 8px rgba(255,82,82,0.8);
+            margin-top: 15px;
+        }
+
+        .regresar {
+            display: inline-block;
+            margin-top: 20px;
+            color: #00cfff;
+            text-decoration: none;
+            border: 2px solid #9fdcff;
+            border-radius: 12px;
+            padding: 8px 18px;
+            box-shadow: inset 0 0 0 2px #0a5e9e, 0 0 8px rgba(0,207,255,0.35);
+        }
+
+        .regresar:hover {
+            background: #00cfff;
+            color: #03203d;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div class="contenedor-registro">
+
+    <h1 class="titulo">REGISTRO</h1>
+
+    <div class="caja">
+
+        <form id="formulario">
+            <label for="nombre">Nombre de Usuario:</label>
+            <input type="text" id="nombre" name="nombre" required>
+
+            <br><br>
+
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" name="password" required>
+
+            <br><br>
+
+            <button type="submit" class="boton_1">Registrarse</button>
+        </form>
+
+        <div id="mensaje" class="mensaje" style="display:none;"></div>
+        <div id="error" class="error" style="display:none;"></div>
+
+    </div>
+
+    <a class="regresar" href="index.html">&lt;&lt; Volver</a>
+
+</div>
+
+<script>
+    const canvas = document.getElementById('matrix');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*+=-';
+    const fuente = 16;
+    let columnas = canvas.width / fuente;
+    let gotas = Array(Math.floor(columnas)).fill(1);
+
+    function dibujarMatrix() {
+        ctx.fillStyle = 'rgba(1, 22, 46, 0.08)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#00cfff';
+        ctx.font = fuente + 'px monospace';
+        for (let i = 0; i < gotas.length; i++) {
+            const texto = letras[Math.floor(Math.random() * letras.length)];
+            ctx.fillText(texto, i * fuente, gotas[i] * fuente);
+            if (gotas[i] * fuente > canvas.height && Math.random() > 0.975) {
+                gotas[i] = 0;
+            }
+            gotas[i]++;
+        }
+    }
+
+    setInterval(dibujarMatrix, 50);
+
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        columnas = canvas.width / fuente;
+        gotas = Array(Math.floor(columnas)).fill(1);
+    });
+
+    const formulario = document.getElementById('formulario');
+    const mensaje = document.getElementById('mensaje');
+    const error = document.getElementById('error');
+
+    formulario.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const nombre = document.getElementById('nombre').value.trim();
+        const password = document.getElementById('password').value;
+
+        error.style.display = 'none';
+
+        if (nombre === '') {
+            error.textContent = 'Debes escribir un nombre de usuario.';
+            error.style.display = 'block';
+            return;
+        }
+
+        if (password !== 'LSB2026') {
+            error.textContent = 'Contraseña incorrecta.';
+            error.style.display = 'block';
+            return;
+        }
+
+        formulario.style.display = 'none';
+        localStorage.setItem('usuario', nombre);
+        mensaje.textContent = 'BIENVENIDO, ' + nombre;
+        mensaje.style.display = 'block';
+
+        setTimeout(() => {
+            window.location.href = 'Menu.html';
+        }, 2500);
+    });
+</script>
+
+</body>
+</html>

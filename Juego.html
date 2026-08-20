@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asteroids</title>
+    <style>
+        body {
+            background-color: #01162e;
+            font-family: 'Courier New', monospace;
+            color: #a8e8ff;
+            margin: 0;
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+
+        #matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.35;
+        }
+
+        .contenedor-juego {
+            text-align: center;
+            width: 95%;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .titulo {
+            color: #00cfff;
+            text-shadow: 0 0 10px #00cfff, 0 0 30px #00cfff;
+            letter-spacing: 8px;
+            font-size: 46px;
+            margin-bottom: 10px;
+        }
+
+        .descripcion {
+            color: #b8ecff;
+            font-size: 15px;
+            max-width: 720px;
+            margin: 0 auto 15px auto;
+            line-height: 1.6;
+        }
+
+        .controles {
+            color: #9fdcff;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .caja-juego {
+            position: relative;
+            border: 2px solid #00cfff;
+            box-shadow: 0 0 15px rgba(0,207,255,0.55), inset 0 0 20px rgba(0,207,255,0.08);
+            background: #03203d;
+            border-radius: 12px;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+            color: #b8ecff;
+            font-size: 18px;
+        }
+
+        .hud b {
+            color: #00cfff;
+            text-shadow: 0 0 8px rgba(0,207,255,0.8);
+        }
+
+        canvas#juego {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: #010d22;
+            border: 2px solid #9fdcff;
+            border-radius: 10px;
+            box-shadow: inset 0 0 0 2px #0a5e9e;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: rgba(1, 22, 46, 0.85);
+            border-radius: 12px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .overlay h2 {
+            color: #00cfff;
+            text-shadow: 0 0 12px #00cfff, 0 0 30px #00cfff;
+            font-size: 36px;
+            letter-spacing: 4px;
+            margin: 10px 0;
+        }
+
+        .overlay p {
+            color: #b8ecff;
+            font-size: 16px;
+            margin: 6px 0;
+            line-height: 1.6;
+        }
+
+        .overlay .puntos-finales {
+            color: #00cfff;
+            font-size: 22px;
+            font-weight: bold;
+            margin: 12px 0;
+            text-shadow: 0 0 10px rgba(0,207,255,0.8);
+        }
+
+        .btn-jugar {
+            margin-top: 18px;
+            padding: 14px 40px;
+            color: #00cfff;
+            background: #062140;
+            border: 2px solid #9fdcff;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 22px;
+            letter-spacing: 3px;
+            cursor: pointer;
+            box-shadow: inset 0 0 0 2px #0a5e9e, 0 0 12px rgba(0,207,255,0.4);
+            text-shadow: 0 0 6px rgba(0,207,255,0.8);
+        }
+
+        .btn-jugar:hover {
+            background: #00cfff;
+            color: #03203d;
+        }
+
+        .regresar {
+            display: inline-block;
+            margin-top: 20px;
+            color: #00cfff;
+            text-decoration: none;
+            border: 2px solid #9fdcff;
+            border-radius: 12px;
+            padding: 8px 18px;
+            box-shadow: inset 0 0 0 2px #0a5e9e, 0 0 8px rgba(0,207,255,0.35);
+        }
+
+        .regresar:hover {
+            background: #00cfff;
+            color: #03203d;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div class="contenedor-juego">
+
+    <h1 class="titulo">ASTEROIDS</h1>
+
+    <p class="descripcion">
+        Pilotea tu nave espacial y destruye todos los asteroides de cada nivel antes de que te destruyan a ti.
+        Cada nivel trae más rocas y más velocidad. ¡Sobrevive hasta el nivel 5!
+    </p>
+
+    <p class="controles">
+        CONTROLES &nbsp;—&nbsp; &#8592; &#8594; / A D : Girar &nbsp;|&nbsp; &#8593; / W : Propulsión &nbsp;|&nbsp; ESPACIO : Disparar
+    </p>
+
+    <div class="caja-juego">
+
+        <div class="hud">
+            <span>PUNTOS: <b id="hud-puntos">0</b></span>
+            <span>VIDAS: <b id="hud-vidas">3</b></span>
+            <span>NIVEL: <b id="hud-nivel">1</b></span>
+        </div>
+
+        <canvas id="juego" width="900" height="560"></canvas>
+
+        <div class="overlay" id="overlay">
+            <h2>ASTEROIDS</h2>
+            <p>Destruye todos los asteroides de cada nivel.</p>
+            <p>&#8592; &#8594; o A D : Girar la nave</p>
+            <p>&#8593; o W : Propulsión</p>
+            <p>ESPACIO : Disparar</p>
+            <button class="btn-jugar" id="btn-jugar">JUGAR</button>
+        </div>
+
+    </div>
+
+    <a class="regresar" href="Menu.html">&lt;&lt; Volver al Menú</a>
+
+</div>
+
+<script>
+    const canvas = document.getElementById('juego');
+    const ctx = canvas.getContext('2d');
+    const overlay = document.getElementById('overlay');
+    const btnJugar = document.getElementById('btn-jugar');
+
+    const NIVELES = [
+        { asteroides: 4, velocidad: 1.0, cooldown: 380 },
+        { asteroides: 6, velocidad: 1.35, cooldown: 320 },
+        { asteroides: 8, velocidad: 1.7, cooldown: 270 },
+        { asteroides: 10, velocidad: 2.05, cooldown: 230 },
+        { asteroides: 12, velocidad: 2.4, cooldown: 190 }
+    ];
+
+    const teclas = {};
+    let juegoActivo = false;
+    let animId = null;
+    let ultimoTiempo = 0;
+    let puntos = 0;
+    let vidas = 3;
+    let nivel = 1;
+    let nave = null;
+    let asteroides = [];
+    let balas = [];
+    let particulas = [];
+    let banner = null;
+
+    document.addEventListener('keydown', (e) => {
+        const k = e.key.toLowerCase();
+        if (['arrowleft', 'arrowright', 'arrowup', 'arrowdown', ' ', 'a', 'd', 'w', 's'].includes(k) || e.key === ' ') {
+            e.preventDefault();
+        }
+        teclas[e.key] = true;
+    });
+
+    document.addEventListener('keyup', (e) => {
+        teclas[e.key] = false;
+    });
+
+    function crearNave() {
+        return {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            ang: -Math.PI / 2,
+            vx: 0,
+            vy: 0,
+            invulnerable: 2,
+            cooldown: 0
+        };
+    }
+
+    function formaAsteroide(r) {
+        const forma = [];
+        const n = 9 + Math.floor(Math.random() * 4);
+        for (let i = 0; i < n; i++) {
+            forma.push(0.75 + Math.random() * 0.5);
+        }
+        return { r: r, forma: forma, rot: Math.random() * Math.PI * 2 };
+    }
+
+    function crearAsteroide(x, y, r) {
+        const vel = NIVELES[nivel - 1].velocidad;
+        const ang = Math.random() * Math.PI * 2;
+        const rap = (0.4 + Math.random() * 1.1) * vel;
+        return {
+            x: x,
+            y: y,
+            vx: Math.cos(ang) * rap,
+            vy: Math.sin(ang) * rap,
+            r: r,
+            forma: formaAsteroide(r).forma,
+            rot: formaAsteroide(r).rot,
+            velRot: (Math.random() - 0.5) * 0.03
+        };
+    }
+
+    function iniciarNivel(n) {
+        nivel = n;
+        const conf = NIVELES[n - 1];
+        asteroides = [];
+        balas = [];
+        particulas = [];
+        nave = crearNave();
+        for (let i = 0; i < conf.asteroides; i++) {
+            let x, y;
+            let intentos = 0;
+            do {
+                x = Math.random() * canvas.width;
+                y = Math.random() * canvas.height;
+                intentos++;
+            } while (intentos < 60 && Math.hypot(x - nave.x, y - nave.y) < 160);
+            asteroides.push(crearAsteroide(x, y, 40 + Math.random() * 14));
+        }
+        banner = 'NIVEL ' + n;
+        setTimeout(() => { banner = null; }, 1500);
+        actualizarHud();
+    }
+
+    function actualizarHud() {
+        document.getElementById('hud-puntos').textContent = puntos;
+        document.getElementById('hud-vidas').textContent = vidas;
+        document.getElementById('hud-nivel').textContent = nivel;
+    }
+
+    function disparar() {
+        const conf = NIVELES[nivel - 1];
+        if (nave.cooldown > 0) return;
+        nave.cooldown = conf.cooldown;
+        const rap = 6;
+        balas.push({
+            x: nave.x + Math.cos(nave.ang) * 18,
+            y: nave.y + Math.sin(nave.ang) * 18,
+            vx: Math.cos(nave.ang) * rap + nave.vx * 0.4,
+            vy: Math.sin(nave.ang) * rap + nave.vy * 0.4,
+            vida: 1.2
+        });
+    }
+
+    function romperAsteroide(a, indice) {
+        asteroides.splice(indice, 1);
+        let pts;
+        if (a.r > 26) {
+            pts = 20;
+            asteroides.push(crearAsteroide(a.x, a.y, a.r * 0.6));
+            asteroides.push(crearAsteroide(a.x, a.y, a.r * 0.6));
+        } else if (a.r > 13) {
+            pts = 50;
+            asteroides.push(crearAsteroide(a.x, a.y, a.r * 0.62));
+            asteroides.push(crearAsteroide(a.x, a.y, a.r * 0.62));
+        } else {
+            pts = 100;
+        }
+        puntos += pts;
+
+        for (let i = 0; i < 14; i++) {
+            const ang = Math.random() * Math.PI * 2;
+            const rap = 1 + Math.random() * 3;
+            particulas.push({
+                x: a.x, y: a.y,
+                vx: Math.cos(ang) * rap, vy: Math.sin(ang) * rap,
+                vida: 0.4 + Math.random() * 0.5,
+                maxVida: 0.9,
+                r: 1.5 + Math.random() * 2
+            });
+        }
+    }
+
+    function explosionNave() {
+        for (let i = 0; i < 40; i++) {
+            const ang = Math.random() * Math.PI * 2;
+            const rap = 1 + Math.random() * 4;
+            particulas.push({
+                x: nave.x, y: nave.y,
+                vx: Math.cos(ang) * rap, vy: Math.sin(ang) * rap,
+                vida: 0.5 + Math.random() * 0.6,
+                maxVida: 1.1,
+                r: 2 + Math.random() * 2.5
+            });
+        }
+    }
+
+    function perderVida() {
+        vidas--;
+        actualizarHud();
+        explosionNave();
+        if (vidas <= 0) {
+            juegoActivo = false;
+            cancelAnimationFrame(animId);
+            overlay.innerHTML = '<h2>FIN DEL JUEGO</h2>' +
+                '<p class="puntos-finales">PUNTOS: ' + puntos + '</p>' +
+                '<p>Los asteroides ganaron esta vez.</p>' +
+                '<button class="btn-jugar" id="btn-reiniciar">REINICIAR</button>';
+            document.getElementById('btn-reiniciar').addEventListener('click', iniciar);
+            return;
+        }
+        nave = crearNave();
+        nave.invulnerable = 2;
+    }
+
+    function dibujarNave() {
+        if (nave.invulnerable > 0 && Math.floor(nave.invulnerable * 8) % 2 === 0) return;
+
+        ctx.save();
+        ctx.translate(nave.x, nave.y);
+        ctx.rotate(nave.ang);
+
+        if (teclas['ArrowUp'] || teclas['w'] || teclas['W']) {
+            ctx.beginPath();
+            ctx.moveTo(-12, 0);
+            ctx.lineTo(-24, -7);
+            ctx.lineTo(-24, 7);
+            ctx.closePath();
+            ctx.fillStyle = '#9fdcff';
+            ctx.shadowColor = '#00cfff';
+            ctx.shadowBlur = 12;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(18, 0);
+        ctx.lineTo(-12, -12);
+        ctx.lineTo(-7, 0);
+        ctx.lineTo(-12, 12);
+        ctx.closePath();
+        ctx.fillStyle = '#062140';
+        ctx.fill();
+        ctx.strokeStyle = '#00cfff';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#00cfff';
+        ctx.shadowBlur = 8;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        ctx.restore();
+    }
+
+    function dibujarAsteroide(a) {
+        ctx.save();
+        ctx.translate(a.x, a.y);
+        ctx.rotate(a.rot);
+        ctx.beginPath();
+        for (let i = 0; i < a.forma.length; i++) {
+            const ang = (i / a.forma.length) * Math.PI * 2;
+            const r = a.r * a.forma[i];
+            const px = Math.cos(ang) * r;
+            const py = Math.sin(ang) * r;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(0, 207, 255, 0.1)';
+        ctx.fill();
+        ctx.strokeStyle = '#00cfff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    function dibujarParticulas() {
+        particulas.forEach(p => {
+            const alpha = Math.max(p.vida / p.maxVida, 0);
+            ctx.fillStyle = 'rgba(0, 207, 255, ' + alpha + ')';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+
+    function dibujar() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        dibujarParticulas();
+        balas.forEach(b => {
+            ctx.fillStyle = '#9fdcff';
+            ctx.shadowColor = '#00cfff';
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        });
+        asteroides.forEach(dibujarAsteroide);
+        dibujarNave();
+
+        if (banner) {
+            ctx.fillStyle = '#00cfff';
+            ctx.shadowColor = '#00cfff';
+            ctx.shadowBlur = 15;
+            ctx.font = 'bold 46px Courier New, monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(banner, canvas.width / 2, canvas.height / 2 - 40);
+            ctx.shadowBlur = 0;
+        }
+    }
+
+    function actualizar(dt) {
+        const conf = NIVELES[nivel - 1];
+
+        if (teclas['ArrowLeft'] || teclas['a'] || teclas['A']) nave.ang -= 0.05 * dt * 60;
+        if (teclas['ArrowRight'] || teclas['d'] || teclas['D']) nave.ang += 0.05 * dt * 60;
+
+        const impulsando = teclas['ArrowUp'] || teclas['w'] || teclas['W'];
+        if (impulsando) {
+            nave.vx += Math.cos(nave.ang) * 0.16 * dt * 60;
+            nave.vy += Math.sin(nave.ang) * 0.16 * dt * 60;
+        }
+
+        if (teclas[' ']) disparar();
+
+        const friccion = Math.pow(0.98, dt * 60);
+        nave.vx *= friccion;
+        nave.vy *= friccion;
+        nave.x += nave.vx * dt * 60;
+        nave.y += nave.vy * dt * 60;
+        if (nave.cooldown > 0) nave.cooldown -= dt * 1000;
+        if (nave.invulnerable > 0) nave.invulnerable -= dt;
+
+        if (nave.x < -20) nave.x = canvas.width + 20;
+        if (nave.x > canvas.width + 20) nave.x = -20;
+        if (nave.y < -20) nave.y = canvas.height + 20;
+        if (nave.y > canvas.height + 20) nave.y = -20;
+
+        asteroides.forEach(a => {
+            a.x += a.vx * dt * 60 * conf.velocidad;
+            a.y += a.vy * dt * 60 * conf.velocidad;
+            a.rot += a.velRot * dt * 60;
+            if (a.x < -60) a.x = canvas.width + 60;
+            if (a.x > canvas.width + 60) a.x = -60;
+            if (a.y < -60) a.y = canvas.height + 60;
+            if (a.y > canvas.height + 60) a.y = -60;
+        });
+
+        balas.forEach(b => {
+            b.x += b.vx * dt * 60;
+            b.y += b.vy * dt * 60;
+            b.vida -= dt;
+        });
+        balas = balas.filter(b => b.vida > 0 && b.x > -10 && b.x < canvas.width + 10 && b.y > -10 && b.y < canvas.height + 10);
+
+        particulas.forEach(p => {
+            p.x += p.vx * dt * 60;
+            p.y += p.vy * dt * 60;
+            p.vida -= dt;
+        });
+        particulas = particulas.filter(p => p.vida > 0);
+
+        for (let i = balas.length - 1; i >= 0; i--) {
+            for (let j = asteroides.length - 1; j >= 0; j--) {
+                const b = balas[i];
+                const a = asteroides[j];
+                if (Math.hypot(b.x - a.x, b.y - a.y) < a.r) {
+                    balas.splice(i, 1);
+                    romperAsteroide(a, j);
+                    actualizarHud();
+                    break;
+                }
+            }
+        }
+
+        if (nave.invulnerable <= 0) {
+            for (let j = asteroides.length - 1; j >= 0; j--) {
+                const a = asteroides[j];
+                if (Math.hypot(nave.x - a.x, nave.y - a.y) < a.r + 16) {
+                    perderVida();
+                    if (vidas <= 0) return;
+                    break;
+                }
+            }
+        }
+
+        if (asteroides.length === 0) {
+            if (nivel >= 5) {
+                juegoActivo = false;
+                cancelAnimationFrame(animId);
+                overlay.innerHTML = '<h2>¡VICTORIA!</h2>' +
+                    '<p class="puntos-finales">PUNTOS: ' + puntos + '</p>' +
+                    '<p>Completaste los 5 niveles. ¡Eres el mejor piloto!</p>' +
+                    '<button class="btn-jugar" id="btn-reiniciar">VOLVER A JUGAR</button>';
+                document.getElementById('btn-reiniciar').addEventListener('click', iniciar);
+                return;
+            }
+            iniciarNivel(nivel + 1);
+        }
+    }
+
+    function bucle(tiempo) {
+        if (!juegoActivo) return;
+        const dt = Math.min((tiempo - ultimoTiempo) / 1000, 0.05);
+        ultimoTiempo = tiempo;
+        actualizar(dt);
+        dibujar();
+        animId = requestAnimationFrame(bucle);
+    }
+
+    function iniciar() {
+        puntos = 0;
+        vidas = 3;
+        iniciarNivel(1);
+        overlay.style.display = 'none';
+        juegoActivo = true;
+        ultimoTiempo = performance.now();
+        if (animId) cancelAnimationFrame(animId);
+        animId = requestAnimationFrame(bucle);
+    }
+
+    btnJugar.addEventListener('click', iniciar);
+
+    const canvasM = document.getElementById('matrix');
+    const ctxM = canvasM.getContext('2d');
+    canvasM.width = window.innerWidth;
+    canvasM.height = window.innerHeight;
+
+    const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*+=-';
+    const fuente = 16;
+    let columnas = canvasM.width / fuente;
+    let gotas = Array(Math.floor(columnas)).fill(1);
+
+    function dibujarMatrix() {
+        ctxM.fillStyle = 'rgba(1, 22, 46, 0.08)';
+        ctxM.fillRect(0, 0, canvasM.width, canvasM.height);
+        ctxM.fillStyle = '#00cfff';
+        ctxM.font = fuente + 'px monospace';
+        for (let i = 0; i < gotas.length; i++) {
+            const texto = letras[Math.floor(Math.random() * letras.length)];
+            ctxM.fillText(texto, i * fuente, gotas[i] * fuente);
+            if (gotas[i] * fuente > canvasM.height && Math.random() > 0.975) {
+                gotas[i] = 0;
+            }
+            gotas[i]++;
+        }
+    }
+
+    setInterval(dibujarMatrix, 50);
+
+    window.addEventListener('resize', () => {
+        canvasM.width = window.innerWidth;
+        canvasM.height = window.innerHeight;
+        columnas = canvasM.width / fuente;
+        gotas = Array(Math.floor(columnas)).fill(1);
+    });
+</script>
+
+</body>
+</html>

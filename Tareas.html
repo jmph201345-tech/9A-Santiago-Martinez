@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tareas</title>
+    <style>
+        body {
+            background-color: #01162e;
+            font-family: 'Courier New', monospace;
+            color: #a8e8ff;
+            margin: 0;
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+
+        #matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.35;
+        }
+
+        .contenedor-tareas {
+            text-align: center;
+            width: 95%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .titulo {
+            color: #00cfff;
+            text-shadow: 0 0 10px #00cfff, 0 0 30px #00cfff;
+            letter-spacing: 6px;
+            font-size: 44px;
+            margin-bottom: 15px;
+        }
+
+        .caja-principal {
+            border: 2px solid #00cfff;
+            box-shadow: 0 0 15px rgba(0,207,255,0.55), inset 0 0 20px rgba(0,207,255,0.08);
+            background: #03203d;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .panel-calendario,
+        .panel-tareas {
+            flex: 1;
+            min-width: 320px;
+            border: 2px solid #00cfff;
+            box-shadow: 0 0 12px rgba(0,207,255,0.45), inset 0 0 20px rgba(0,207,255,0.06);
+            background: #062140;
+            border-radius: 12px;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .sub-titulo {
+            color: #00cfff;
+            text-shadow: 0 0 8px rgba(0,207,255,0.7);
+            margin-top: 0;
+        }
+
+        .cal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #mes-anio {
+            color: #b8ecff;
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .btn-nav {
+            background: #062140;
+            color: #00cfff;
+            border: 2px solid #9fdcff;
+            border-radius: 10px;
+            box-shadow: inset 0 0 0 2px #0a5e9e, 0 0 8px rgba(0,207,255,0.35);
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 6px 14px;
+        }
+
+        .btn-nav:hover {
+            background: #00cfff;
+            color: #03203d;
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .cal-dia-nombre {
+            color: #00cfff;
+            font-weight: bold;
+            font-size: 14px;
+            padding: 5px 0;
+        }
+
+        .cal-dia {
+            border: 2px solid #9fdcff;
+            box-shadow: inset 0 0 0 2px #0a5e9e;
+            border-radius: 8px;
+            background: #052440;
+            color: #b8ecff;
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            min-height: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            padding: 4px;
+            box-sizing: border-box;
+        }
+
+        .cal-dia:hover {
+            background: #0a3d68;
+        }
+
+        .cal-dia.vacio {
+            border-color: transparent;
+            box-shadow: none;
+            background: transparent;
+            cursor: default;
+        }
+
+        .cal-dia.con-tareas::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: #00cfff;
+            border-radius: 50%;
+            box-shadow: 0 0 6px #00cfff;
+            position: absolute;
+            bottom: 4px;
+        }
+
+        .cal-dia.seleccionado {
+            background: #00cfff;
+            color: #03203d;
+            box-shadow: 0 0 14px rgba(0,207,255,0.9);
+        }
+
+        .cal-dia.seleccionado.con-tareas::after {
+            background: #03203d;
+            box-shadow: none;
+        }
+
+        #fecha-seleccionada {
+            color: #00cfff;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-shadow: 0 0 8px rgba(0,207,255,0.6);
+        }
+
+        .nueva-tarea {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        #input-tarea {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #9fdcff;
+            border-radius: 10px;
+            background: #052440;
+            color: #b8ecff;
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            box-shadow: inset 0 0 0 2px #0a5e9e;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        #btn-agregar {
+            padding: 10px 18px;
+            background: #062140;
+            color: #00cfff;
+            border: 2px solid #9fdcff;
+            border-radius: 10px;
+            box-shadow: inset 0 0 0 2px #0a5e9e, 0 0 8px rgba(0,207,255,0.35);
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        #btn-agregar:hover {
+            background: #00cfff;
+            color: #03203d;
+        }
+
+        #lista-tareas {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        #lista-tareas li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            text-align: left;
+            border: 2px solid #9fdcff;
+            border-radius: 10px;
+            background: #052440;
+            padding: 10px;
+            margin-bottom: 8px;
+            color: #c8f2ff;
+            box-shadow: inset 0 0 0 2px #0a5e9e;
+        }
+
+        .btn-eliminar {
+            background: #2a0a0a;
+            color: #ff6b6b;
+            border: 2px solid #ff9f9f;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            padding: 4px 10px;
+            flex-shrink: 0;
+        }
+
+        .btn-eliminar:hover {
+            background: #ff6b6b;
+            color: #03203d;
+        }
+
+        .sin-tareas {
+            color: #6ea7c4;
+            font-style: italic;
+            padding: 20px 0;
+        }
+
+        .regresar {
+            display: inline-block;
+            margin-top: 20px;
+            color: #00cfff;
+            text-decoration: none;
+            border: 2px solid #9fdcff;
+            border-radius: 12px;
+            padding: 8px 18px;
+            box-shadow: inset 0 0 0 2px #0a5e9e, 0 0 8px rgba(0,207,255,0.35);
+        }
+
+        .regresar:hover {
+            background: #00cfff;
+            color: #03203d;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div class="contenedor-tareas">
+
+    <h1 class="titulo">TAREAS</h1>
+
+    <div class="caja-principal">
+
+        <div class="panel-calendario">
+            <h2 class="sub-titulo">Calendario</h2>
+            <div class="cal-header">
+                <button class="btn-nav" id="btn-prev">&#9664;</button>
+                <span id="mes-anio"></span>
+                <button class="btn-nav" id="btn-next">&#9654;</button>
+            </div>
+            <div class="cal-grid" id="cal-grid"></div>
+        </div>
+
+        <div class="panel-tareas">
+            <h2 class="sub-titulo">Tareas del día</h2>
+            <p id="fecha-seleccionada"></p>
+            <div class="nueva-tarea">
+                <input type="text" id="input-tarea" placeholder="Escribe una tarea nueva..." maxlength="120">
+                <button id="btn-agregar">Agregar</button>
+            </div>
+            <ul id="lista-tareas"></ul>
+        </div>
+
+    </div>
+
+    <a class="regresar" href="Menu.html">&lt;&lt; Volver al Menú</a>
+
+</div>
+
+<script>
+    const canvas = document.getElementById('matrix');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*+=-';
+    const fuente = 16;
+    let columnas = canvas.width / fuente;
+    let gotas = Array(Math.floor(columnas)).fill(1);
+
+    function dibujarMatrix() {
+        ctx.fillStyle = 'rgba(1, 22, 46, 0.08)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#00cfff';
+        ctx.font = fuente + 'px monospace';
+        for (let i = 0; i < gotas.length; i++) {
+            const texto = letras[Math.floor(Math.random() * letras.length)];
+            ctx.fillText(texto, i * fuente, gotas[i] * fuente);
+            if (gotas[i] * fuente > canvas.height && Math.random() > 0.975) {
+                gotas[i] = 0;
+            }
+            gotas[i]++;
+        }
+    }
+
+    setInterval(dibujarMatrix, 50);
+
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        columnas = canvas.width / fuente;
+        gotas = Array(Math.floor(columnas)).fill(1);
+    });
+
+    const meses = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+    const diasSemana = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
+
+    const grid = document.getElementById('cal-grid');
+    const labelMes = document.getElementById('mes-anio');
+    const inputTarea = document.getElementById('input-tarea');
+    const listaTareas = document.getElementById('lista-tareas');
+    const fechaSeleccionada = document.getElementById('fecha-seleccionada');
+
+    const hoy = new Date();
+    let anio = hoy.getFullYear();
+    let mes = hoy.getMonth();
+    let seleccion = new Date(anio, mes, hoy.getDate());
+    seleccion = anio + '-' + String(mes + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0');
+
+    function aCadena(a, m, d) {
+        return a + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    }
+
+    function getTareas(fecha) {
+        try {
+            return JSON.parse(localStorage.getItem('tareas_' + fecha) || '[]');
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function setTareas(fecha, arr) {
+        localStorage.setItem('tareas_' + fecha, JSON.stringify(arr));
+    }
+
+    function formatearFecha(fecha) {
+        const partes = fecha.split('-');
+        const a = parseInt(partes[0], 10);
+        const m = parseInt(partes[1], 10) - 1;
+        const d = parseInt(partes[2], 10);
+        return d + ' de ' + meses[m] + ' de ' + a;
+    }
+
+    function pintarCalendario() {
+        labelMes.textContent = meses[mes] + ' ' + anio;
+        grid.innerHTML = '';
+
+        diasSemana.forEach(nombre => {
+            const celda = document.createElement('div');
+            celda.className = 'cal-dia-nombre';
+            celda.textContent = nombre;
+            grid.appendChild(celda);
+        });
+
+        const primerDia = new Date(anio, mes, 1);
+        const diasEnMes = new Date(anio, mes + 1, 0).getDate();
+        let inicio = (primerDia.getDay() + 6) % 7;
+
+        for (let i = 0; i < inicio; i++) {
+            const vacio = document.createElement('div');
+            vacio.className = 'cal-dia vacio';
+            grid.appendChild(vacio);
+        }
+
+        for (let d = 1; d <= diasEnMes; d++) {
+            const fecha = aCadena(anio, mes, d);
+            const celda = document.createElement('div');
+            celda.className = 'cal-dia';
+            celda.textContent = d;
+            if (getTareas(fecha).length > 0) {
+                celda.classList.add('con-tareas');
+            }
+            if (fecha === seleccion) {
+                celda.classList.add('seleccionado');
+            }
+            celda.addEventListener('click', () => {
+                seleccion = fecha;
+                pintarCalendario();
+                pintarTareas();
+            });
+            grid.appendChild(celda);
+        }
+    }
+
+    function pintarTareas() {
+        fechaSeleccionada.textContent = formatearFecha(seleccion);
+        const tareas = getTareas(seleccion);
+        listaTareas.innerHTML = '';
+
+        if (tareas.length === 0) {
+            const vacio = document.createElement('li');
+            vacio.className = 'sin-tareas';
+            vacio.textContent = 'No hay tareas para este día.';
+            listaTareas.appendChild(vacio);
+            return;
+        }
+
+        tareas.forEach((tarea, indice) => {
+            const item = document.createElement('li');
+            const texto = document.createElement('span');
+            texto.textContent = tarea;
+            const boton = document.createElement('button');
+            boton.className = 'btn-eliminar';
+            boton.textContent = 'X';
+            boton.addEventListener('click', () => {
+                const nuevas = getTareas(seleccion);
+                nuevas.splice(indice, 1);
+                setTareas(seleccion, nuevas);
+                pintarCalendario();
+                pintarTareas();
+            });
+            item.appendChild(texto);
+            item.appendChild(boton);
+            listaTareas.appendChild(item);
+        });
+    }
+
+    document.getElementById('btn-prev').addEventListener('click', () => {
+        mes--;
+        if (mes < 0) { mes = 11; anio--; }
+        pintarCalendario();
+    });
+
+    document.getElementById('btn-next').addEventListener('click', () => {
+        mes++;
+        if (mes > 11) { mes = 0; anio++; }
+        pintarCalendario();
+    });
+
+    document.getElementById('btn-agregar').addEventListener('click', () => {
+        const texto = inputTarea.value.trim();
+        if (texto === '') {
+            inputTarea.focus();
+            return;
+        }
+        const tareas = getTareas(seleccion);
+        tareas.push(texto);
+        setTareas(seleccion, tareas);
+        inputTarea.value = '';
+        pintarCalendario();
+        pintarTareas();
+    });
+
+    inputTarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            document.getElementById('btn-agregar').click();
+        }
+    });
+
+    pintarCalendario();
+    pintarTareas();
+</script>
+
+</body>
+</html>

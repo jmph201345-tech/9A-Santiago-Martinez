@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diario</title>
+    <style>
+        body {
+            background-color: #01162e;
+            font-family: 'Courier New', monospace;
+            color: #a8e8ff;
+            margin: 0;
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+
+        #matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.35;
+        }
+
+        .contenedor-diario {
+            text-align: center;
+            width: 95%;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .titulo {
+            color: #00cfff;
+            text-shadow: 0 0 10px #00cfff, 0 0 30px #00cfff;
+            letter-spacing: 6px;
+            font-size: 44px;
+            margin-bottom: 15px;
+        }
+
+        .caja-diario {
+            border: 2px solid #00cfff;
+            box-shadow: 0 0 15px rgba(0,207,255,0.55), inset 0 0 20px rgba(0,207,255,0.08);
+            background: #03203d;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .barra-fecha {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .barra-fecha label {
+            color: #00cfff;
+            font-size: 18px;
+            text-shadow: 0 0 6px rgba(0,207,255,0.8);
+        }
+
+        .barra-fecha input[type="date"] {
+            padding: 8px 12px;
+            border: 2px solid #9fdcff;
+            border-radius: 10px;
+            background: #062140;
+            color: #b8ecff;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            box-shadow: inset 0 0 0 2px #0a5e9e;
+            outline: none;
+        }
+
+        .notebook {
+            width: 100%;
+            min-height: 420px;
+            background-color: #fbfcff;
+            background-image:
+                linear-gradient(to right, #e8877c 0, #e8877c 2px, transparent 2px),
+                repeating-linear-gradient(to bottom, #a9cbe8 0, #a9cbe8 1px, transparent 1px, transparent 28px);
+            background-position: 38px 0, 0 0;
+            background-size: 2px 100%, 100% 28px;
+            border-radius: 8px;
+            color: #1a2b3a;
+            font-family: 'Segoe Print', 'Comic Sans MS', cursive;
+            font-size: 18px;
+            line-height: 28px;
+            padding: 10px 14px 10px 54px;
+            border: none;
+            outline: none;
+            resize: vertical;
+            box-sizing: border-box;
+            box-shadow: 0 0 14px rgba(0,207,255,0.5);
+            text-align: left;
+        }
+
+        .boton_guardar {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 30px;
+            color: #00cfff;
+            background: #062140;
+            border: 2px solid #9fdcff;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: inset 0 0 0 2px #0a5e9e, 0 0 10px rgba(0,207,255,0.4);
+            text-shadow: 0 0 5px rgba(0,207,255,0.8);
+        }
+
+        .boton_guardar:hover {
+            background: #00cfff;
+            color: #03203d;
+        }
+
+        .estado {
+            margin-top: 12px;
+            color: #00cfff;
+            font-size: 16px;
+            text-shadow: 0 0 8px rgba(0,207,255,0.6);
+            min-height: 20px;
+        }
+
+        .horario {
+            color: #b8ecff;
+            text-align: center;
+            border: 2px solid #00cfff;
+            box-shadow: 0 0 10px rgba(0,207,255,0.4);
+            border-radius: 12px;
+            margin-top: 20px;
+            padding: 12px;
+            background: #052440;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .h-titulo {
+            color: #00cfff;
+            text-shadow: 0 0 8px rgba(0,207,255,0.7);
+        }
+
+        .tabla {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .tabla th, .tabla td {
+            border: 1px solid #00cfff;
+            padding: 6px 4px;
+            text-align: center;
+            color: #c8f2ff;
+            font-size: 12px;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+
+        .tabla th {
+            background: #0a3d68;
+            color: #00cfff;
+        }
+
+        .tabla td {
+            background: #062140;
+        }
+
+        .regresar {
+            display: inline-block;
+            margin-top: 20px;
+            color: #00cfff;
+            text-decoration: none;
+            border: 2px solid #9fdcff;
+            border-radius: 12px;
+            padding: 8px 18px;
+            box-shadow: inset 0 0 0 2px #0a5e9e, 0 0 8px rgba(0,207,255,0.35);
+        }
+
+        .regresar:hover {
+            background: #00cfff;
+            color: #03203d;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div class="contenedor-diario">
+
+    <h1 class="titulo">MI DIARIO</h1>
+
+    <div class="caja-diario">
+
+        <div class="barra-fecha">
+            <label for="fecha">Fecha:</label>
+            <input type="date" id="fecha">
+        </div>
+
+        <textarea class="notebook" id="hoja" placeholder="Escribe aquí lo que pasó hoy..."></textarea>
+
+        <br>
+
+        <button class="boton_guardar" id="btn-guardar">Guardar</button>
+        <div class="estado" id="estado"></div>
+
+    </div>
+
+    <div class="horario">
+
+        <h1 class="h-titulo">Horario de Clases</h1>
+
+        <table class="tabla">
+
+            <tr>
+                <th>Hora</th>
+                <th>Día 1</th>
+                <th>Día 2</th>
+                <th>Día 3</th>
+                <th>Día 4</th>
+                <th>Día 5</th>
+                <th>Día 6</th>
+                <th>Día 7</th>
+            </tr>
+
+            <tr>
+                <th>1</th>
+                <td>BIOLOGÍA</td>
+                <td>EDU.FÍSICA</td>
+                <td>ESPAÑOL</td>
+                <td>FRANCÉS</td>
+                <td>BIOLOGÍA</td>
+                <td>EDU.FÍSICA</td>
+                <td>INGLÉS</td>
+            </tr>
+
+            <tr>
+                <th>2</th>
+                <td>GEOMETRÍA</td>
+                <td>SOCIALES</td>
+                <td>SOCIALES</td>
+                <td>ESPAÑOL</td>
+                <td>MATEMÁTICAS</td>
+                <td>INGLÉS</td>
+                <td>SOCIALES</td>
+            </tr>
+
+            <tr>
+                <th>3</th>
+                <td>DESCANSO</td>
+                <td>DESCANSO</td>
+                <td>DESCANSO</td>
+                <td>DESCANSO</td>
+                <td>DESCANSO</td>
+                <td>DESCANSO</td>
+                <td>DESCANSO</td>
+            </tr>
+
+            <tr>
+                <th>4</th>
+                <td>ESPAÑOL</td>
+                <td>FILOSOFÍA</td>
+                <td>ESTADÍSTICA</td>
+                <td>INFORMÁTICA</td>
+                <td>INGLÉS</td>
+                <td>FRANCÉS</td>
+                <td>ROBÓTICA</td>
+            </tr>
+
+            <tr>
+                <th>5</th>
+                <td>SOCIALES</td>
+                <td>MATEMÁTICAS</td>
+                <td>FÍSICA</td>
+                <td>INGLÉS</td>
+                <td>SOCIALES</td>
+                <td>MATEMÁTICAS</td>
+                <td>QUÍMICA</td>
+            </tr>
+
+            <tr>
+                <th>6</th>
+                <td>FRANCÉS</td>
+                <td>SKILLS</td>
+                <td>DANZAS</td>
+                <td>ÉTICA</td>
+                <td>DIBUJO/SKILLS</td>
+                <td>SOCIALES</td>
+                <td>BIOLOGÍA</td>
+            </tr>
+
+            <tr>
+                <th>7</th>
+                <td>CÁTEDRA</td>
+                <td>ESPAÑOL</td>
+                <td>PILEO</td>
+                <td>BIOLOGÍA</td>
+                <td>DIBUJO/SKILLS</td>
+                <td>PILEO</td>
+                <td>ESPAÑOL</td>
+            </tr>
+
+            <tr>
+                <th>8</th>
+                <td>INGLÉS</td>
+                <td>INGLÉS</td>
+                <td>BIOLOGÍA</td>
+                <td>MATEMÁTICAS</td>
+                <td>DANZAS</td>
+                <td>INFORMÁTICA</td>
+                <td>MATEMÁTICAS</td>
+            </tr>
+
+        </table>
+
+    </div>
+
+    <a class="regresar" href="Menu.html">&lt;&lt; Volver al Menú</a>
+
+</div>
+
+<script>
+    const canvas = document.getElementById('matrix');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*+=-';
+    const fuente = 16;
+    let columnas = canvas.width / fuente;
+    let gotas = Array(Math.floor(columnas)).fill(1);
+
+    function dibujarMatrix() {
+        ctx.fillStyle = 'rgba(1, 22, 46, 0.08)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#00cfff';
+        ctx.font = fuente + 'px monospace';
+        for (let i = 0; i < gotas.length; i++) {
+            const texto = letras[Math.floor(Math.random() * letras.length)];
+            ctx.fillText(texto, i * fuente, gotas[i] * fuente);
+            if (gotas[i] * fuente > canvas.height && Math.random() > 0.975) {
+                gotas[i] = 0;
+            }
+            gotas[i]++;
+        }
+    }
+
+    setInterval(dibujarMatrix, 50);
+
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        columnas = canvas.width / fuente;
+        gotas = Array(Math.floor(columnas)).fill(1);
+    });
+
+    const inputFecha = document.getElementById('fecha');
+    const hoja = document.getElementById('hoja');
+    const estado = document.getElementById('estado');
+
+    const hoy = new Date();
+    const hoyCadena = hoy.getFullYear() + '-' +
+        String(hoy.getMonth() + 1).padStart(2, '0') + '-' +
+        String(hoy.getDate()).padStart(2, '0');
+    inputFecha.value = hoyCadena;
+
+    function cargar() {
+        const texto = localStorage.getItem('diario_' + inputFecha.value);
+        hoja.value = texto !== null ? texto : '';
+        estado.textContent = '';
+    }
+
+    document.getElementById('btn-guardar').addEventListener('click', () => {
+        localStorage.setItem('diario_' + inputFecha.value, hoja.value);
+        estado.textContent = 'Entrada guardada para el ' + inputFecha.value + '.';
+        setTimeout(() => { estado.textContent = ''; }, 2500);
+    });
+
+    inputFecha.addEventListener('change', cargar);
+
+    cargar();
+</script>
+
+</body>
+</html>

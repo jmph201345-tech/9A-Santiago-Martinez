@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú</title>
+    <style>
+        body {
+            background-color: #01162e;
+            font-family: 'Courier New', monospace;
+            color: #a8e8ff;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.35;
+        }
+
+        .contenedor-menu {
+            text-align: center;
+            width: 90%;
+            max-width: 520px;
+        }
+
+        .titulo {
+            color: #00cfff;
+            text-shadow: 0 0 10px #00cfff, 0 0 30px #00cfff;
+            letter-spacing: 6px;
+            font-size: 44px;
+            margin-bottom: 10px;
+        }
+
+        .bienvenida {
+            color: #b8ecff;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        .caja {
+            border: 2px solid #00cfff;
+            box-shadow: 0 0 15px rgba(0,207,255,0.55), inset 0 0 20px rgba(0,207,255,0.08);
+            background: #03203d;
+            border-radius: 12px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .boton_menu {
+            display: inline-block;
+            width: 80%;
+            padding: 16px 0;
+            color: #00cfff;
+            background: #062140;
+            border: 2px solid #9fdcff;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 22px;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: inset 0 0 0 2px #0a5e9e, 0 0 10px rgba(0,207,255,0.4);
+            text-shadow: 0 0 5px rgba(0,207,255,0.8);
+            letter-spacing: 3px;
+        }
+
+        .boton_menu:hover {
+            background: #00cfff;
+            color: #03203d;
+            box-shadow: 0 0 20px rgba(0,207,255,0.9), inset 0 0 0 2px #0a5e9e;
+        }
+
+        .regresar {
+            display: inline-block;
+            margin-top: 20px;
+            color: #00cfff;
+            text-decoration: none;
+            border: 2px solid #9fdcff;
+            border-radius: 12px;
+            padding: 8px 18px;
+            box-shadow: inset 0 0 0 2px #0a5e9e, 0 0 8px rgba(0,207,255,0.35);
+        }
+
+        .regresar:hover {
+            background: #00cfff;
+            color: #03203d;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div class="contenedor-menu">
+
+    <h1 class="titulo">MENÚ</h1>
+
+    <p class="bienvenida" id="bienvenida">BIENVENIDO</p>
+
+    <div class="caja">
+        <a class="boton_menu" href="Diario.html">DIARIO</a>
+        <a class="boton_menu" href="Tareas.html">TAREAS</a>
+        <a class="boton_menu" href="Juego.html">JUEGO</a>
+        <a class="boton_menu" href="Musica.html">MÚSICA</a>
+    </div>
+
+    <a class="regresar" href="index.html">&lt;&lt; Volver</a>
+
+</div>
+
+<script>
+    const canvas = document.getElementById('matrix');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*+=-';
+    const fuente = 16;
+    let columnas = canvas.width / fuente;
+    let gotas = Array(Math.floor(columnas)).fill(1);
+
+    function dibujarMatrix() {
+        ctx.fillStyle = 'rgba(1, 22, 46, 0.08)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#00cfff';
+        ctx.font = fuente + 'px monospace';
+        for (let i = 0; i < gotas.length; i++) {
+            const texto = letras[Math.floor(Math.random() * letras.length)];
+            ctx.fillText(texto, i * fuente, gotas[i] * fuente);
+            if (gotas[i] * fuente > canvas.height && Math.random() > 0.975) {
+                gotas[i] = 0;
+            }
+            gotas[i]++;
+        }
+    }
+
+    setInterval(dibujarMatrix, 50);
+
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        columnas = canvas.width / fuente;
+        gotas = Array(Math.floor(columnas)).fill(1);
+    });
+
+    const usuario = localStorage.getItem('usuario');
+    if (usuario) {
+        document.getElementById('bienvenida').textContent = 'BIENVENIDO, ' + usuario.toUpperCase();
+    }
+</script>
+
+</body>
+</html>
