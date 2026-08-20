@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musica</title>
+    <style>
+        body {
+            background-color: #01162e;
+            font-family: 'Courier New', monospace;
+            color: #a8e8ff;
+            margin: 0;
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+
+        #matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.35;
+        }
+
+        .contenedor-musica {
+            text-align: center;
+            width: 95%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .titulo {
+            color: #00cfff;
+            text-shadow: 0 0 10px #00cfff, 0 0 30px #00cfff;
+            letter-spacing: 6px;
+            font-size: 44px;
+            margin-bottom: 15px;
+        }
+
+        .layout-principal {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .panel-izquierdo {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .panel-derecho {
+            width: 320px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 20px;
+        }
+
+        .caja-musica {
+            border: 2px solid #00cfff;
+            box-shadow: 0 0 15px rgba(0,207,255,0.55), inset 0 0 20px rgba(0,207,255,0.08);
+            background: #03203d;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+
+        .caja-musica h2 {
+            color: #00cfff;
+            text-shadow: 0 0 8px rgba(0,207,255,0.8);
+            margin: 0 0 14px 0;
+            font-size: 20px;
+            letter-spacing: 3px;
+        }
+
+        .buscador-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .buscador-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #9fdcff;
+            border-radius: 10px;
+            background: #062140;
+            color: #b8ecff;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            box-shadow: inset 0 0 0 2px #0a5e9e;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .buscador-input:focus {
+            border-color: #00cfff;
+            box-shadow: inset 0 0 0 2px #0a5e9e, 0 0 12px rgba(0,207,255,0.5);
+        }
+
+        .buscador-input::placeholder {
+            color: #4a7a9b;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            color: #00cfff;
+            background: #062140;
+            border: 2px solid #9fdcff;
+            border-radius: 12px;
+            box-shadow: inset 0 0 0 2px #0a5e9e, 0 0 10px rgba(0,207,255,0.4);
+            text-shadow: 0 0 5px rgba(0,207,255,0.8);
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: #00cfff;
+            color: #03203d;
+            box-shadow: 0 0 20px rgba(0,207,255,0.9), inset 0 0 0 2px #0a5e9e;
+        }
+
+        .btn-buscar {
+            font-size: 18px;
+            padding: 10px 22px;
+        }
+
+        .resultados-lista {
+            max-height: 340px;
+            overflow-y: auto;
+            margin-top: 14px;
+        }
+
+        .resultados-lista::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .resultados-lista::-webkit-scrollbar-track {
+            background: #062140;
+            border-radius: 3px;
+        }
+
+        .resultados-lista::-webkit-scrollbar-thumb {
+            background: #00cfff;
+            border-radius: 3px;
+        }
+
+        .resultado-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border: 1px solid #0a3d68;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #062140;
+        }
+
+        .resultado-item:hover {
+            border-color: #00cfff;
+            background: #0a3d68;
+            box-shadow: 0 0 10px rgba(0,207,255,0.3);
+        }
+
+        .resultado-item.reproduciendo {
+            border-color: #00cfff;
+            background: #0a3d68;
+            box-shadow: 0 0 15px rgba(0,207,255,0.5);
+        }
+
+        .resultado-num {
+            color: #00cfff;
+            font-size: 14px;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .resultado-info {
+            flex: 1;
+            text-align: left;
+            min-width: 0;
+        }
+
+        .resultado-titulo {
+            color: #b8ecff;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .resultado-artista {
+            color: #4a7a9b;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .resultado-acciones {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-mini {
+            padding: 4px 10px;
+            font-size: 11px;
+            border-radius: 8px;
+        }
+
+        .btn-guardar {
+            color: #00ff88;
+            border-color: #00ff88;
+        }
+
+        .btn-guardar:hover {
+            background: #00ff88;
+            color: #03203d;
+        }
+
+        .btn-eliminar {
+            color: #ff6b6b;
+            border-color: #ff6b6b;
+        }
+
+        .btn-eliminar:hover {
+            background: #ff6b6b;
+            color: #03203d;
+        }
+
+        .sin-resultados {
+            color: #4a7a9b;
+            font-size: 14px;
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        /* === TOCADISCOS === */
+        .tocadiscos-wrapper {
+            position: relative;
+            width: 300px;
+            height: 380px;
+            margin: 0 auto;
+        }
+
+        .tocadiscos-base {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background: linear-gradient(180deg, #0a3d68 0%, #062140 100%);
+            border-radius: 0 0 12px 12px;
+            border: 2px solid #00cfff;
+            border-top: none;
+            box-shadow: 0 0 15px rgba(0,207,255,0.3);
+        }
+
+        .tocadiscos-base::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 6px;
+            background: #00cfff;
+            border-radius: 3px;
+            box-shadow: 0 0 8px rgba(0,207,255,0.8);
+        }
+
+        .tocadiscos-tapa {
+            position: absolute;
+            bottom: 60px;
+            left: 10px;
+            width: 280px;
+            height: 8px;
+            background: linear-gradient(90deg, #0a3d68, #00cfff, #0a3d68);
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0,207,255,0.5);
+        }
+
+        .disco-container {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 260px;
+            height: 260px;
+        }
+
+        .disco {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle,
+                #111 0%, #111 15%,
+                #1a1a1a 16%, #111 17%,
+                #222 20%, #111 22%,
+                #1a1a1a 30%, #111 32%,
+                #222 40%, #111 42%,
+                #1a1a1a 50%, #111 52%,
+                #222 60%, #111 62%,
+                #1a1a1a 70%, #111 72%,
+                #222 80%, #111 82%,
+                #1a1a1a 90%, #111 100%
+            );
+            border: 3px solid #333;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8), 0 0 40px rgba(0,207,255,0.15);
+            position: relative;
+        }
+
+        .disco.girando {
+            animation: girar 2s linear infinite;
+        }
+
+        .disco-centro {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #00cfff 0%, #0a5e9e 40%, #062140 100%);
+            border: 2px solid #00cfff;
+            box-shadow: 0 0 15px rgba(0,207,255,0.6);
+        }
+
+        .disco-centro::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #03203d;
+            border: 2px solid #00cfff;
+        }
+
+        .disco-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #062140 0%, #03203d 100%);
+            border: 1px solid #0a5e9e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .disco-label span {
+            color: #00cfff;
+            font-size: 9px;
+            text-align: center;
+            text-shadow: 0 0 5px rgba(0,207,255,0.8);
+            padding: 5px;
+            word-break: break-word;
+            line-height: 1.2;
+        }
+
+        .tono {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 8px;
+            height: 120px;
+            background: linear-gradient(180deg, #9fdcff 0%, #0a5e9e 100%);
+            border-radius: 4px;
+            transform-origin: top center;
+            transform: rotate(-25deg);
+            transition: transform 0.5s ease;
+            box-shadow: 0 0 8px rgba(0,207,255,0.4);
+        }
+
+        .tono.reproduciendo {
+            transform: rotate(0deg);
+        }
+
+        .tono::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 12px;
+            background: #00cfff;
+            border-radius: 2px;
+            box-shadow: 0 0 6px rgba(0,207,255,0.8);
+        }
+
+        .tono-base {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #0a3d68;
+            border: 2px solid #00cfff;
+            box-shadow: 0 0 8px rgba(0,207,255,0.4);
+        }
+
+        @keyframes girar {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* === CANCION ACTUAL === */
+        .cancion-actual {
+            text-align: center;
+            margin-top: 14px;
+        }
+
+        .cancion-actual-label {
+            color: #4a7a9b;
+            font-size: 11px;
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+        }
+
+        .cancion-actual-nombre {
+            color: #00cfff;
+            font-size: 14px;
+            text-shadow: 0 0 8px rgba(0,207,255,0.6);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .controles-reproduccion {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .btn-control {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            padding: 0;
+        }
+
+        /* === PLAYLISTS === */
+        .playlist-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .playlist-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid #9fdcff;
+            border-radius: 10px;
+            background: #062140;
+            color: #b8ecff;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            box-shadow: inset 0 0 0 2px #0a5e9e;
+            outline: none;
+        }
+
+        .playlist-input:focus {
+            border-color: #00cfff;
+            box-shadow: inset 0 0 0 2px #0a5e9e, 0 0 12px rgba(0,207,255,0.5);
+        }
+
+        .playlist-input::placeholder {
+            color: #4a7a9b;
+        }
+
+        .playlists-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .playlists-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .playlists-container::-webkit-scrollbar-track {
+            background: #062140;
+            border-radius: 3px;
+        }
+
+        .playlists-container::-webkit-scrollbar-thumb {
+            background: #00cfff;
+            border-radius: 3px;
+        }
+
+        .playlist-bloque {
+            border: 1px solid #0a3d68;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .playlist-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: #062140;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .playlist-header-bar:hover {
+            background: #0a3d68;
+        }
+
+        .playlist-nombre {
+            color: #00cfff;
+            font-size: 14px;
+            text-shadow: 0 0 5px rgba(0,207,255,0.6);
+        }
+
+        .playlist-count {
+            color: #4a7a9b;
+            font-size: 12px;
+        }
+
+        .playlist-canciones {
+            display: none;
+            padding: 8px;
+            background: #03203d;
+        }
+
+        .playlist-canciones.abierta {
+            display: block;
+        }
+
+        .playlist-cancion-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            transition: background 0.3s;
+            cursor: pointer;
+        }
+
+        .playlist-cancion-item:hover {
+            background: #062140;
+        }
+
+        .playlist-cancion-nombre {
+            flex: 1;
+            color: #b8ecff;
+            font-size: 12px;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .playlist-cancion-artista {
+            color: #4a7a9b;
+            font-size: 11px;
+        }
+
+        #ytplayer {
+            display: none;
+        }
+
+        @media (max-width: 900px) {
+            .layout-principal {
+                flex-direction: column;
+            }
+            .panel-derecho {
+                width: 100%;
+                position: static;
+                order: -1;
+            }
+            .tocadiscos-wrapper {
+                width: 240px;
+                height: 320px;
+            }
+            .disco-container {
+                width: 200px;
+                height: 200px;
+            }
+            .titulo {
+                font-size: 32px;
+                letter-spacing: 4px;
+            }
+        }
+
+        .regresar {
+            display: inline-block;
+            margin-top: 20px;
+            color: #00cfff;
+            text-decoration: none;
+            font-size: 16px;
+            letter-spacing: 2px;
+            padding: 10px 20px;
+            border: 2px solid #00cfff;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,207,255,0.4);
+            transition: all 0.3s;
+        }
+
+        .regresar:hover {
+            background: #00cfff;
+            color: #03203d;
+            box-shadow: 0 0 20px rgba(0,207,255,0.9);
+        }
+
+        .glow-line {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00cfff, transparent);
+            border: none;
+            margin: 12px 0;
+            box-shadow: 0 0 8px rgba(0,207,255,0.6);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix"></canvas>
+
+    <div class="contenedor-musica">
+        <h1 class="titulo">TEMAS MUSICALES AMADOS</h1>
+
+        <div class="layout-principal">
+            <!-- PANEL IZQUIERDO -->
+            <div class="panel-izquierdo">
+                <!-- Buscador -->
+                <div class="caja-musica">
+                    <h2>Buscador de Musica</h2>
+                    <div class="buscador-container">
+                        <input type="text" class="buscador-input" id="buscador" placeholder="Escribe el nombre de una cancion..." autocomplete="off">
+                        <button class="btn btn-buscar" id="btn-buscar">Buscar</button>
+                    </div>
+                    <div id="resultados" class="resultados-lista"></div>
+                </div>
+
+                <!-- Cola -->
+                <div class="caja-musica" id="caja-reproduccion" style="display:none;">
+                    <h2>Cola de Reproduccion</h2>
+                    <div id="cola-reproduccion" class="resultados-lista"></div>
+                </div>
+
+                <!-- Playlists -->
+                <div class="caja-musica">
+                    <h2>Mis Playlists</h2>
+                    <div class="playlist-header">
+                        <input type="text" class="playlist-input" id="nombre-playlist" placeholder="Nombre de la playlist...">
+                        <button class="btn" id="btn-crear-pl">Crear</button>
+                    </div>
+                    <div id="playlists-container" class="playlists-container"></div>
+                </div>
+            </div>
+
+            <!-- PANEL DERECHO: Tocadiscos -->
+            <div class="panel-derecho">
+                <div class="caja-musica">
+                    <div class="tocadiscos-wrapper">
+                        <div class="disco-container">
+                            <div class="disco" id="disco">
+                                <div class="disco-label">
+                                    <span id="disco-texto">Tu cancion aqui</span>
+                                </div>
+                                <div class="disco-centro"></div>
+                            </div>
+                        </div>
+                        <div class="tono-base"></div>
+                        <div class="tono" id="tono"></div>
+                        <div class="tocadiscos-tapa"></div>
+                        <div class="tocadiscos-base"></div>
+                    </div>
+                    <div class="cancion-actual">
+                        <div class="cancion-actual-label">REPRODUCIENDO</div>
+                        <div class="cancion-actual-nombre" id="cancion-actual">Ninguna cancion</div>
+                    </div>
+                    <hr class="glow-line">
+                    <div class="controles-reproduccion">
+                        <button class="btn btn-control" id="btn-prev" title="Anterior">&#9664;&#9664;</button>
+                        <button class="btn btn-control" id="btn-play-pause" title="Play/Pause">&#9654;</button>
+                        <button class="btn btn-control" id="btn-next" title="Siguiente">&#9654;&#9654;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a class="regresar" href="Menu.html">&lt;&lt; Volver al Menu</a>
+    </div>
+
+    <div id="ytplayer"></div>
+
+    <script>
+        // ==================== MATRIX RAIN ====================
+        (function() {
+            var canvas = document.getElementById('matrix');
+            var ctx = canvas.getContext('2d');
+            canvas.height = window.innerHeight;
+            canvas.width = window.innerWidth;
+            var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*+=-';
+            var fontSize = 16;
+            var columns = Math.floor(canvas.width / fontSize);
+            var drops = [];
+            for (var i = 0; i < columns; i++) drops[i] = 1;
+
+            function drawMatrix() {
+                ctx.fillStyle = 'rgba(1, 22, 46, 0.08)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#00cfff';
+                ctx.font = fontSize + 'px monospace';
+                for (var i = 0; i < drops.length; i++) {
+                    var text = chars.charAt(Math.floor(Math.random() * chars.length));
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+            setInterval(drawMatrix, 50);
+            window.addEventListener('resize', function() {
+                canvas.height = window.innerHeight;
+                canvas.width = window.innerWidth;
+                columns = Math.floor(canvas.width / fontSize);
+                drops = [];
+                for (var i = 0; i < columns; i++) drops[i] = 1;
+            });
+        })();
+
+        // ==================== CANCIONES ====================
+        var canciones = [
+            { id: "kJQP7kiw5Fk", titulo: "Despacito", artista: "Luis Fonsi ft. Daddy Yankee" },
+            { id: "JGwWNGJdvx8", titulo: "Shape of You", artista: "Ed Sheeran" },
+            { id: "09R8_2nJtjg", titulo: "Sugar", artista: "Maroon 5" },
+            { id: "fJ9rUzIMcZQ", titulo: "Bohemian Rhapsody", artista: "Queen" },
+            { id: "60ItHLz5WEA", titulo: "Faded", artista: "Alan Walker" },
+            { id: "RgKAFK5djSk", titulo: "See You Again", artista: "Wiz Khalifa ft. Charlie Puth" },
+            { id: "YQHsXMglC9A", titulo: "Hello", artista: "Adele" },
+            { id: "lp-EO5I60KA", titulo: "Fly Me to the Moon", artista: "Frank Sinatra" },
+            { id: "0Dur2TkMXbQ", titulo: "Roar", artista: "Katy Perry" },
+            { id: "Gq5qV0dBf9o", titulo: "Echame La Culpa", artista: "Luis Fonsi ft. Demi Lovato" },
+            { id: "OPf0YGbEe9Y", titulo: "Uptown Funk", artista: "Bruno Mars" },
+            { id: "8UVNT4LmsthQ", titulo: "Somebody That I Used to Know", artista: "Gotye" },
+            { id: "fLexgOxsZu0", titulo: "Firework", artista: "Katy Perry" },
+            { id: "V_PXvL3fmRc", titulo: "See Tinh", artista: "Hoang Thuy Linh" },
+            { id: "6D68K4VumsI", titulo: "Glimpse of Us", artista: "Joji" },
+            { id: "kTJczNoc5W8", titulo: "As It Was", artista: "Harry Styles" },
+            { id: "5QynnK6G-oQ", titulo: "Unstoppable", artista: "Sia" },
+            { id: "KGmT1Y2WOcQ", titulo: "One Kiss", artista: "Calvin Harris & Dua Lipa" },
+            { id: "pAgnJDJN4VA", titulo: "Levitating", artista: "Dua Lipa" },
+            { id: "oygrmJFFYZ8", titulo: "Dont Start Now", artista: "Dua Lipa" },
+            { id: "mvs9C6EpgZc", titulo: "Montero", artista: "Lil Nas X" },
+            { id: "XqZsoesa55w", titulo: "Baby Shark", artista: "Pinkfong" },
+            { id: "DyDfgMOUjCI", titulo: "Bad Guy", artista: "Billie Eilish" },
+            { id: "fHI8XVOXtbQ", titulo: "Stay", artista: "The Kid LAROI & Justin Bieber" },
+            { id: "oL1EAqYbRCM", titulo: "Heat Waves", artista: "Glass Animals" },
+            { id: "4TjTDZ_-9K0", titulo: "Blinding Lights", artista: "The Weeknd" },
+            { id: "z8St6cPMK0w", titulo: "Pepas", artista: "Farruko" },
+            { id: "Tv9buow3keM", titulo: "Titi Me Pregunto", artista: "Bad Bunny" },
+            { id: "mQbY8Cz4U6o", titulo: "Me Porto Bonito", artista: "Bad Bunny & Chencho Corleone" },
+            { id: "dQw4w9WgXcQ", titulo: "Never Gonna Give You Up", artista: "Rick Astley" },
+            { id: "PSXmKiCtNPo", titulo: "Gangnam Style", artista: "PSY" },
+            { id: "go6geI1us7Q", titulo: "Bailando", artista: "Enrique Iglesias" },
+            { id: "H5v3kku4y6Q", titulo: "Someone Like You", artista: "Adele" },
+            { id: "fC7oUOUEsq0", titulo: "Thinking Out Loud", artista: "Ed Sheeran" },
+            { id: "kffacxfA7G4", titulo: "Teenage Dream", artista: "Katy Perry" },
+            { id: "k4V3Mo2z2Jg", titulo: "Just the Way You Are", artista: "Bruno Mars" },
+            { id: "5fOd7ZEOhO8", titulo: "Love Yourself", artista: "Justin Bieber" },
+            { id: "QYh6mYIJG2Y", titulo: "Dark Horse", artista: "Katy Perry" },
+            { id: "7dqXGHWSrV8", titulo: "Believer", artista: "Imagine Dragons" },
+            { id: "fKopy74weus", titulo: "Thunder", artista: "Imagine Dragons" },
+            { id: "7PCkvCPvDXk", titulo: "Natural", artista: "Imagine Dragons" },
+            { id: "w6T02g5hnT4", titulo: "Circles", artista: "Post Malone" },
+            { id: "ApXoWijNqIc", titulo: "Sunflower", artista: "Post Malone & Swae Lee" },
+            { id: "U9tALaLMf0o", titulo: "Rockstar", artista: "Post Malone ft. 21 Savage" },
+            { id: "2Vv-BfVoq4g", titulo: "Watermelon Sugar", artista: "Harry Styles" },
+            { id: "Ve9vX6Zxaqc", titulo: "Adore You", artista: "Harry Styles" },
+            { id: "aNYEh3uB984", titulo: "Late Night Talking", artista: "Harry Styles" },
+            { id: "4pyWO6yYpMA", titulo: "Starboy", artista: "The Weeknd" },
+            { id: "yxW5ywhVi54", titulo: "Save Your Tears", artista: "The Weeknd" },
+            { id: "qea1H1GPD6I", titulo: "Die For You", artista: "The Weeknd" },
+            { id: "b1kbwlNgd5g", titulo: "Anti-Hero", artista: "Taylor Swift" },
+            { id: "e-ORhEE9VVg", titulo: "Shake It Off", artista: "Taylor Swift" },
+            { id: "8xgkg14wVuo", titulo: "Love Story", artista: "Taylor Swift" },
+            { id: "wIft-tMAQu8", titulo: "Flowers", artista: "Miley Cyrus" },
+            { id: "DYed5whEf4g", titulo: "Wrecking Ball", artista: "Miley Cyrus" },
+            { id: "rbNL9Z6FUnk", titulo: "Party in the USA", artista: "Miley Cyrus" },
+            { id: "kByE1N7FGBo", titulo: "Havana", artista: "Camila Cabello" },
+            { id: "KbU9kOGaE3k", titulo: "Senorita", artista: "Shawn Mendes & Camila Cabello" },
+            { id: "KQetemT1sWc", titulo: "Stitches", artista: "Shawn Mendes" },
+            { id: "w0AOGeRKOnM", titulo: "Old Town Road", artista: "Lil Nas X" },
+            { id: "nfs8NYg7yQM", titulo: "Lose Yourself", artista: "Eminem" },
+            { id: "jNQXAC9IVRw", titulo: "Not Afraid", artista: "Eminem" },
+            { id: "sENM2wAxEoI", titulo: "Mockingbird", artista: "Eminem" },
+            { id: "81bBPcx8nXA", titulo: "Stan", artista: "Eminem ft. Dido" },
+            { id: "EwTZ0xpBpwQ", titulo: "Lose Control", artista: "Teddy Swims" },
+            { id: "kPa7bsKwL-c", titulo: "Die With A Smile", artista: "Lady Gaga & Bruno Mars" },
+            { id: "kOKHb6nNTKs", titulo: "Beautiful Things", artista: "Benson Boone" },
+            { id: "FTb63o7V1og", titulo: "I Aint Worried", artista: "OneRepublic" },
+            { id: "RY3XiMHioN4", titulo: "Counting Stars", artista: "OneRepublic" },
+            { id: "hT_nvWreIhg", titulo: "We Found Love", artista: "Rihanna" },
+            { id: "lQKb3pM3h0Y", titulo: "Umbrella", artista: "Rihanna" },
+            { id: "lKTWdbSmgd8", titulo: "Diamonds", artista: "Rihanna" },
+            { id: "RUVZxZzH_Yk", titulo: "Calma", artista: "Pedro Capo" },
+            { id: "U4Dx7Dq2nlY", titulo: "La Bicicleta", artista: "Carlos Vives & Shakira" },
+            { id: "RmpHTKsZp7w", titulo: "Waka Waka", artista: "Shakira" },
+            { id: "D9G1VOjN_84", titulo: "Hips Don't Lie", artista: "Shakira" },
+            { id: "ZbZSe6CY_BQ", titulo: "Happy", artista: "Pharrell Williams" },
+            { id: "ru0K8u9hMFo", titulo: "Cant Stop the Feeling", artista: "Justin Timberlake" },
+            { id: "8Z3k6LAkagg", titulo: "Juicy", artista: "Doja Cat" },
+            { id: "h4TK2NlQf9o", titulo: "Say So", artista: "Doja Cat" },
+            { id: "WfGAtYGHfQo", titulo: "Kiss Me More", artista: "Doja Cat ft. SZA" },
+            { id: "chmMKiiRLKY", titulo: "Paint The Town Red", artista: "Doja Cat" },
+            { id: "9V9Hc18imVU", titulo: "Sweater Weather", artista: "The Neighbourhood" },
+            { id: "XfQ3N8bSRpA", titulo: "Creep", artista: "Radiohead" },
+            { id: "Pb1mAE_zVdQ", titulo: "Smells Like Teen Spirit", artista: "Nirvana" },
+            { id: "kByE1N7FGBo", titulo: "Under the Bridge", artista: "Red Hot Chili Peppers" },
+            { id: "RXeOiIDNNek", titulo: "Californication", artista: "Red Hot Chili Peppers" },
+            { id: "BciS5krYL80", titulo: "Hotel California", artista: "Eagles" },
+            { id: "1w7OgIMMRc4", titulo: "Sweet Child O Mine", artista: "Guns N Roses" },
+            { id: "RomC9PMb8VE", titulo: "Dream On", artista: "Aerosmith" },
+            { id: "qgaVagD7q3I", titulo: "Every Breath You Take", artista: "The Police" },
+            { id: "dvgZkm1xWPE", titulo: "Viva La Vida", artista: "Coldplay" },
+            { id: "wY6tZ2kftIg", titulo: "Fix You", artista: "Coldplay" },
+            { id: "yKNxeF4KMsE", titulo: "Yellow", artista: "Coldplay" },
+            { id: "3JZ_D3ELwOQ", titulo: "The Scientist", artista: "Coldplay" },
+            { id: "O-iLuvQtqZA", titulo: "Toxic", artista: "Britney Spears" },
+            { id: "aZ5rE1bMFzM", titulo: "Baby One More Time", artista: "Britney Spears" },
+            { id: "ByA5MHiL3gI", titulo: "Billie Jean", artista: "Michael Jackson" },
+            { id: "oRdxUFDoQe0", titulo: "Thriller", artista: "Michael Jackson" },
+            { id: "0z2kPuBBhn4", titulo: "Beat It", artista: "Michael Jackson" },
+            { id: "JnygAJPWqkQ", titulo: "Smooth Criminal", artista: "Michael Jackson" },
+            { id: "sVx1mJDeUjY", titulo: "Shape of My Heart", artista: "Sting" },
+            { id: "bx1BhEwE4gg", titulo: "Wonderwall", artista: "Oasis" },
+            { id: "rg1ieY7xgn4", titulo: "Taki Taki", artista: "DJ Snake ft. Selena Gomez" },
+            { id: "a633KXVPKI", titulo: "Vivir Mi Vida", artista: "Marc Anthony" },
+            { id: "wYa2NnIunRI", titulo: "Dakiti", artista: "Bad Bunny & Jhay Cortez" },
+            { id: "takF3Zi1giY", titulo: "Yonaguni", artista: "Bad Bunny" },
+            { id: "qrO4ZeyxhPI", titulo: "Poker Face", artista: "Lady Gaga" },
+            { id: "kkmmHKkHn8w", titulo: "Bad Romance", artista: "Lady Gaga" },
+            { id: "bo_efYhYU2A", titulo: "Shallow", artista: "Lady Gaga & Bradley Cooper" },
+            { id: "u0cXm2a-Jxg", titulo: "Applause", artista: "Lady Gaga" },
+            { id: "IcrbM1l_BoI", titulo: "Cruel Summer", artista: "Taylor Swift" },
+            { id: "gxD1eZME0Vc", titulo: "Something Just Like This", artista: "The Chainsmokers & Coldplay" },
+            { id: "PqJNcByqijc", titulo: "Closer", artista: "The Chainsmokers ft. Halsey" },
+            { id: "uoYlw2MGjHc", titulo: "Wake Me Up", artista: "Avicii" },
+            { id: "IcrbM1l_BoI", titulo: "Levels", artista: "Avicii" },
+            { id: "9xKPzKEQJDw", titulo: "Lean On", artista: "Major Lazer & DJ Snake" },
+            { id: "yuzoPWo9EFI", titulo: "Sorry", artista: "Justin Bieber" },
+            { id: "kffacxfA7G4", titulo: "What Makes You Beautiful", artista: "One Direction" },
+            { id: "QYh6mYIJG2Y", titulo: "Steal My Girl", artista: "One Direction" },
+            { id: "e-ORhEE9VVg", titulo: "Blank Space", artista: "Taylor Swift" },
+            { id: "8xgkg14wVuo", titulo: "Wildest Dreams", artista: "Taylor Swift" },
+            { id: "wIft-tMAQu8", titulo: "Midnight Rain", artista: "Taylor Swift" },
+            { id: "2Vv-BfVoq4g", titulo: "Versace on the Floor", artista: "Bruno Mars" },
+            { id: "ftv5mQn7xPo", titulo: "Leave the Door Open", artista: "Silk Sonic" },
+            { id: "kPa7bsKwL-c", titulo: "No Tears Left to Cry", artista: "Ariana Grande" },
+            { id: "ffxIKh5SvRQ", titulo: "7 Rings", artista: "Ariana Grande" },
+            { id: "9GoRq5xQn8A", titulo: "Positions", artista: "Ariana Grande" },
+            { id: "fHI8XVOXtbQ", titulo: "Thank U, Next", artista: "Ariana Grande" },
+            { id: "7PCkvCPvDXk", titulo: "Older", artista: "Steve Lacy" },
+            { id: "w6T02g5hnT4", titulo: "Bad Habit", artista: "Steve Lacy" },
+            { id: "4TjTDZ_-9K0", titulo: "Sacrifice", artista: "The Weeknd" },
+            { id: "2Vv-BfVoq4g", titulo: "That's What I Like", artista: "Bruno Mars" },
+            { id: "RGQ5XloqLGE", titulo: "Locked Out of Heaven", artista: "Bruno Mars" },
+            { id: "YQHsXMglC9A", titulo: "Rolling in the Deep", artista: "Adele" },
+            { id: "H5v3kku4y6Q", titulo: "Set Fire to the Rain", artista: "Adele" },
+            { id: "lp-EO5I60KA", titulo: "My Way", artista: "Frank Sinatra" },
+        ];
+
+        // ==================== STATE ====================
+        var player = null;
+        var cancionActual = null;
+        var colaCanciones = [];
+        var indiceCola = 0;
+        var estaReproduciendo = false;
+
+        // ==================== YOUTUBE API ====================
+        var tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('ytplayer', {
+                height: '1',
+                width: '1',
+                playerVars: { 'autoplay': 0, 'controls': 0, 'disablekb': 1, 'fs': 0, 'modestbranding': 1, 'rel': 0 },
+                events: {
+                    'onReady': function() { console.log('Player listo'); },
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.PLAYING) {
+                estaReproduciendo = true;
+                document.getElementById('btn-play-pause').innerHTML = '&#10074;&#10074;';
+                document.getElementById('disco').classList.add('girando');
+                document.getElementById('tono').classList.add('reproduciendo');
+            } else {
+                estaReproduciendo = false;
+                document.getElementById('btn-play-pause').innerHTML = '&#9654;';
+                document.getElementById('disco').classList.remove('girando');
+                document.getElementById('tono').classList.remove('reproduciendo');
+                if (event.data === YT.PlayerState.ENDED) {
+                    siguienteCancion();
+                }
+            }
+        }
+
+        // ==================== BUSCAR ====================
+        function buscarCancion() {
+            var query = document.getElementById('buscador').value.trim().toLowerCase();
+            var container = document.getElementById('resultados');
+            if (!query) {
+                container.innerHTML = '<div class="sin-resultados">Escribe algo para buscar...</div>';
+                return;
+            }
+            var encontradas = [];
+            var vistas = {};
+            for (var i = 0; i < canciones.length; i++) {
+                var c = canciones[i];
+                if (c.titulo.toLowerCase().indexOf(query) !== -1 || c.artista.toLowerCase().indexOf(query) !== -1) {
+                    var key = c.id + '_' + c.titulo;
+                    if (!vistas[key]) {
+                        vistas[key] = true;
+                        encontradas.push(c);
+                    }
+                }
+            }
+            if (encontradas.length === 0) {
+                container.innerHTML = '<div class="sin-resultados">No se encontraron canciones. Intenta con otro nombre.</div>';
+                return;
+            }
+            var html = '';
+            for (var j = 0; j < encontradas.length; j++) {
+                var c = encontradas[j];
+                var esActual = cancionActual && cancionActual.id === c.id && cancionActual.titulo === c.titulo;
+                html += '<div class="resultado-item ' + (esActual ? 'reproduciendo' : '') + '" data-idx="' + j + '">' +
+                    '<div class="resultado-num">' + (esActual ? '&#9654;' : (j + 1)) + '</div>' +
+                    '<div class="resultado-info">' +
+                    '<div class="resultado-titulo">' + c.titulo + '</div>' +
+                    '<div class="resultado-artista">' + c.artista + '</div>' +
+                    '</div>' +
+                    '<div class="resultado-acciones">' +
+                    '<button class="btn btn-mini btn-guardar btn-agregar-pl" data-idx="' + j + '" title="Guardar en playlist">+ Playlist</button>' +
+                    '</div></div>';
+            }
+            container.innerHTML = html;
+
+            // Bind click events
+            var items = container.querySelectorAll('.resultado-item');
+            for (var k = 0; k < items.length; k++) {
+                (function(item) {
+                    item.addEventListener('click', function(e) {
+                        if (e.target.classList.contains('btn-agregar-pl')) return;
+                        var idx = parseInt(item.getAttribute('data-idx'));
+                        var song = encontradas[idx];
+                        reproducirCancion(song.id, song.titulo, song.artista);
+                        agregarACola(song.id, song.titulo, song.artista);
+                    });
+                })(items[k]);
+            }
+
+            var btns = container.querySelectorAll('.btn-agregar-pl');
+            for (var m = 0; m < btns.length; m++) {
+                (function(btn) {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        var idx = parseInt(btn.getAttribute('data-idx'));
+                        var song = encontradas[idx];
+                        agregarAPlaylist(song.id, song.titulo, song.artista);
+                    });
+                })(btns[m]);
+            }
+        }
+
+        document.getElementById('btn-buscar').addEventListener('click', buscarCancion);
+        document.getElementById('buscador').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') buscarCancion();
+        });
+
+        // ==================== REPRODUCIR ====================
+        function reproducirCancion(id, titulo, artista) {
+            cancionActual = { id: id, titulo: titulo, artista: artista };
+            document.getElementById('cancion-actual').textContent = titulo + ' - ' + artista;
+            document.getElementById('disco-texto').textContent = titulo;
+            if (player && player.loadVideoById) {
+                player.loadVideoById(id);
+            }
+            buscarCancion();
+        }
+
+        function togglePlayPause() {
+            if (!player || !cancionActual) return;
+            if (estaReproduciendo) {
+                player.pauseVideo();
+            } else {
+                player.playVideo();
+            }
+        }
+
+        function siguienteCancion() {
+            if (colaCanciones.length === 0) return;
+            indiceCola = (indiceCola + 1) % colaCanciones.length;
+            var c = colaCanciones[indiceCola];
+            reproducirCancion(c.id, c.titulo, c.artista);
+            renderCola();
+        }
+
+        function anteriorCancion() {
+            if (colaCanciones.length === 0) return;
+            indiceCola = (indiceCola - 1 + colaCanciones.length) % colaCanciones.length;
+            var c = colaCanciones[indiceCola];
+            reproducirCancion(c.id, c.titulo, c.artista);
+            renderCola();
+        }
+
+        document.getElementById('btn-play-pause').addEventListener('click', togglePlayPause);
+        document.getElementById('btn-next').addEventListener('click', siguienteCancion);
+        document.getElementById('btn-prev').addEventListener('click', anteriorCancion);
+        document.getElementById('disco').addEventListener('click', togglePlayPause);
+
+        // ==================== COLA ====================
+        function agregarACola(id, titulo, artista) {
+            var existe = false;
+            for (var i = 0; i < colaCanciones.length; i++) {
+                if (colaCanciones[i].id === id && colaCanciones[i].titulo === titulo) {
+                    existe = true;
+                    break;
+                }
+            }
+            if (!existe) {
+                colaCanciones.push({ id: id, titulo: titulo, artista: artista });
+                renderCola();
+            }
+        }
+
+        function renderCola() {
+            var container = document.getElementById('cola-reproduccion');
+            var caja = document.getElementById('caja-reproduccion');
+            if (colaCanciones.length === 0) {
+                caja.style.display = 'none';
+                return;
+            }
+            caja.style.display = 'block';
+            var html = '';
+            for (var i = 0; i < colaCanciones.length; i++) {
+                var c = colaCanciones[i];
+                var esActual = i === indiceCola && cancionActual && cancionActual.id === c.id;
+                html += '<div class="resultado-item ' + (esActual ? 'reproduciendo' : '') + '" data-cola="' + i + '">' +
+                    '<div class="resultado-num">' + (esActual ? '&#9654;' : (i + 1)) + '</div>' +
+                    '<div class="resultado-info">' +
+                    '<div class="resultado-titulo">' + c.titulo + '</div>' +
+                    '<div class="resultado-artista">' + c.artista + '</div>' +
+                    '</div>' +
+                    '<div class="resultado-acciones">' +
+                    '<button class="btn btn-mini btn-eliminar btn-quit-cola" data-cola="' + i + '" title="Quitar">X</button>' +
+                    '</div></div>';
+            }
+            container.innerHTML = html;
+
+            var items = container.querySelectorAll('.resultado-item');
+            for (var k = 0; k < items.length; k++) {
+                (function(item) {
+                    item.addEventListener('click', function(e) {
+                        if (e.target.classList.contains('btn-quit-cola')) return;
+                        var idx = parseInt(item.getAttribute('data-cola'));
+                        indiceCola = idx;
+                        var c = colaCanciones[idx];
+                        reproducirCancion(c.id, c.titulo, c.artista);
+                        renderCola();
+                    });
+                })(items[k]);
+            }
+
+            var btns = container.querySelectorAll('.btn-quit-cola');
+            for (var m = 0; m < btns.length; m++) {
+                (function(btn) {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        var idx = parseInt(btn.getAttribute('data-cola'));
+                        colaCanciones.splice(idx, 1);
+                        if (indiceCola >= colaCanciones.length) indiceCola = 0;
+                        renderCola();
+                    });
+                })(btns[m]);
+            }
+        }
+
+        // ==================== PLAYLISTS ====================
+        function obtenerPlaylists() {
+            var data = localStorage.getItem('playlists_musica');
+            return data ? JSON.parse(data) : {};
+        }
+
+        function guardarPlaylists(playlists) {
+            localStorage.setItem('playlists_musica', JSON.stringify(playlists));
+        }
+
+        function crearPlaylist() {
+            var nombre = document.getElementById('nombre-playlist').value.trim();
+            if (!nombre) return;
+            var playlists = obtenerPlaylists();
+            if (playlists[nombre]) {
+                alert('Ya existe una playlist con ese nombre.');
+                return;
+            }
+            playlists[nombre] = [];
+            guardarPlaylists(playlists);
+            document.getElementById('nombre-playlist').value = '';
+            renderPlaylists();
+        }
+
+        document.getElementById('btn-crear-pl').addEventListener('click', crearPlaylist);
+        document.getElementById('nombre-playlist').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') crearPlaylist();
+        });
+
+        function agregarAPlaylist(id, titulo, artista) {
+            var playlists = obtenerPlaylists();
+            var nombres = Object.keys(playlists);
+            if (nombres.length === 0) {
+                alert('Primero crea una playlist con el boton "Crear".');
+                return;
+            }
+            var nombre = prompt('En que playlist quieres guardar esta cancion?\n\nPlaylists disponibles:\n' + nombres.join('\n'));
+            if (!nombre || !playlists[nombre]) return;
+            for (var i = 0; i < playlists[nombre].length; i++) {
+                if (playlists[nombre][i].id === id && playlists[nombre][i].titulo === titulo) {
+                    alert('Esta cancion ya esta en la playlist.');
+                    return;
+                }
+            }
+            playlists[nombre].push({ id: id, titulo: titulo, artista: artista });
+            guardarPlaylists(playlists);
+            renderPlaylists();
+            alert('Cancion agregada a "' + nombre + '"');
+        }
+
+        function renderPlaylists() {
+            var container = document.getElementById('playlists-container');
+            var playlists = obtenerPlaylists();
+            var nombres = Object.keys(playlists);
+            if (nombres.length === 0) {
+                container.innerHTML = '<div class="sin-resultados">No tienes playlists creadas. Crea una arriba.</div>';
+                return;
+            }
+            var html = '';
+            for (var n = 0; n < nombres.length; n++) {
+                var nombre = nombres[n];
+                var songs = playlists[nombre];
+                var idSafe = nombre.replace(/\s+/g, '_');
+                html += '<div class="playlist-bloque">' +
+                    '<div class="playlist-header-bar" data-pl-toggle="' + nombre + '">' +
+                    '<span class="playlist-nombre">&#9654; ' + nombre + '</span>' +
+                    '<span class="playlist-count">' + songs.length + ' cancion(es)</span>' +
+                    '</div>' +
+                    '<div class="playlist-canciones" id="pl-' + idSafe + '">' +
+                    '<div style="display:flex; gap:6px; margin-bottom:8px;">' +
+                    '<button class="btn btn-mini btn-reproducir-pl" data-pl-nombre="' + nombre + '" style="flex:1;">Reproducir Todo</button>' +
+                    '<button class="btn btn-mini btn-eliminar btn-eliminar-pl" data-pl-nombre="' + nombre + '">Eliminar</button>' +
+                    '</div>';
+                for (var s = 0; s < songs.length; s++) {
+                    var c = songs[s];
+                    html += '<div class="playlist-cancion-item" data-pl-song="' + nombre + '" data-pl-sidx="' + s + '">' +
+                        '<span class="playlist-cancion-nombre">' + c.titulo + '</span>' +
+                        '<span class="playlist-cancion-artista">' + c.artista + '</span>' +
+                        '<button class="btn btn-mini btn-eliminar btn-quit-pl-song" data-pl-nombre="' + nombre + '" data-pl-sidx="' + s + '" style="padding:2px 6px; font-size:10px;">X</button>' +
+                        '</div>';
+                }
+                html += '</div></div>';
+            }
+            container.innerHTML = html;
+
+            // Toggle open/close
+            var toggles = container.querySelectorAll('[data-pl-toggle]');
+            for (var t = 0; t < toggles.length; t++) {
+                (function(el) {
+                    el.addEventListener('click', function() {
+                        var plName = el.getAttribute('data-pl-toggle');
+                        var plId = 'pl-' + plName.replace(/\s+/g, '_');
+                        var panel = document.getElementById(plId);
+                        if (panel) panel.classList.toggle('abierta');
+                    });
+                })(toggles[t]);
+            }
+
+            // Play all
+            var playBtns = container.querySelectorAll('.btn-reproducir-pl');
+            for (var p = 0; p < playBtns.length; p++) {
+                (function(btn) {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        var plName = btn.getAttribute('data-pl-nombre');
+                        var pls = obtenerPlaylists();
+                        var songs = pls[plName];
+                        if (!songs || songs.length === 0) return;
+                        colaCanciones = songs.slice();
+                        indiceCola = 0;
+                        renderCola();
+                        reproducirCancion(songs[0].id, songs[0].titulo, songs[0].artista);
+                    });
+                })(playBtns[p]);
+            }
+
+            // Delete playlist
+            var delBtns = container.querySelectorAll('.btn-eliminar-pl');
+            for (var d = 0; d < delBtns.length; d++) {
+                (function(btn) {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        var plName = btn.getAttribute('data-pl-nombre');
+                        if (!confirm('Eliminar la playlist "' + plName + '"?')) return;
+                        var pls = obtenerPlaylists();
+                        delete pls[plName];
+                        guardarPlaylists(pls);
+                        renderPlaylists();
+                    });
+                })(delBtns[d]);
+            }
+
+            // Play single song from playlist
+            var songItems = container.querySelectorAll('[data-pl-song]');
+            for (var si = 0; si < songItems.length; si++) {
+                (function(item) {
+                    item.addEventListener('click', function(e) {
+                        if (e.target.classList.contains('btn-quit-pl-song')) return;
+                        var plName = item.getAttribute('data-pl-song');
+                        var sIdx = parseInt(item.getAttribute('data-pl-sidx'));
+                        var pls = obtenerPlaylists();
+                        var songs = pls[plName];
+                        if (songs && songs[sIdx]) {
+                            var c = songs[sIdx];
+                            reproducirCancion(c.id, c.titulo, c.artista);
+                        }
+                    });
+                })(songItems[si]);
+            }
+
+            // Remove song from playlist
+            var quitBtns = container.querySelectorAll('.btn-quit-pl-song');
+            for (var q = 0; q < quitBtns.length; q++) {
+                (function(btn) {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        var plName = btn.getAttribute('data-pl-nombre');
+                        var sIdx = parseInt(btn.getAttribute('data-pl-sidx'));
+                        var pls = obtenerPlaylists();
+                        if (pls[plName]) {
+                            pls[plName].splice(sIdx, 1);
+                            guardarPlaylists(pls);
+                            renderPlaylists();
+                        }
+                    });
+                })(quitBtns[q]);
+            }
+        }
+
+        // ==================== INIT ====================
+        renderPlaylists();
+    </script>
+</body>
+</html>
